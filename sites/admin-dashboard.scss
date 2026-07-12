@@ -1,0 +1,207 @@
+body.goug-dashboard-page {
+    background: url('../assets/images/background.webp') no-repeat center center;
+    background-attachment: fixed;
+    background-size: cover;
+
+    #goug-admin-footer {
+        color: #fff;
+    }
+}
+
+.goug-dashboard {
+    padding: 20px;
+    font-size: 16px;
+    text-align: center;
+
+    img {
+        width: 450px;
+    }
+
+    .goug-conainer {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px;
+        background-color: rgba(0, 0, 0, .50);
+        box-shadow: 0 0 10px rgba(255,255,255,0.25);
+        border-radius: 10px;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 15px;
+
+        p {
+            font-size: 16px;
+        }
+
+        h1 {
+            color: #fff;
+            line-height: 2.5em;
+            font-size: 2em;
+        }
+    }
+
+    .goug-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, .85);
+        padding: 0 25px;
+        padding-top: 10px;
+        padding-bottom: 50px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+
+        h2 {
+            font-size: 2em;
+            line-height: 2em;
+            font-weight: bold;
+            color: #0073aa;
+        }
+
+        .goug-section-flex {
+            display: flex;
+            gap: 50px;
+            justify-content: center;  /* Centers horizontally */
+            align-items: center;  /* Centers vertically */            
+        }
+
+        .goug-flex {
+            display: flex;
+            gap: 15px;
+            justify-content: center;  /* Centers horizontally */
+            align-items: center;  /* Centers vertically */
+
+            .goug-actions {
+                width: 100px;
+                height: 100px;
+                display: flex;
+                text-decoration: none;
+                flex-direction: column; /* Stack icon & text */
+                align-items: center; /* Center horizontally */
+                justify-content: center; /* Center vertically */
+                text-align: center;
+                background-color: #f1f1f1;
+                /* padding: 15px; */
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.25);
+
+                &:hover {
+                    animation: bounce 0.5s ease-in-out;
+                }
+
+                h4 {
+                    margin: 0;
+                    color: #0073aa;
+                }
+
+                .dashicons {
+                    position: relative;
+                    color: black;
+                    font-size: 45px;
+                    line-height: 1;
+                    margin-bottom: 5px; /* Space between icon & text */
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 20px;
+                }
+            }
+
+            .goug-stats {
+                width: 125px;
+
+                &:hover {
+                    animation: none;
+                }
+            }
+        }
+
+        .goug-update-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f1f1f1;
+            padding: 25px;
+            border-radius: 10px;
+            width: 150px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+
+            p {
+                line-height: 0.5;
+                color: #0073aa;
+            }
+
+            .status {
+                font-size: 14px;
+                font-weight: bold;
+                padding: 4px 8px;
+                border-radius: 4px;
+                display: inline-block;
+                margin-top: 5px;
+
+                &.success {
+                    background: #4caf50;
+                    color: white;
+                }
+
+                &.warning {
+                    background: #ff9800;
+                    color: white;
+                }
+            }
+        }
+
+        #admin-dashboard-widgets {
+            background: #f1f1f1;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;  /* Centers horizontally */
+            align-items: center;  /* Centers vertically */
+
+            .admin-widget {
+                background: white;
+                padding: 25px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .widget-title {
+                font-size: 16px;
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+.goug-notices {
+    position: relative;
+    top: -20px; /* Adjust as needed */
+    width: 100%;
+    z-index: 999;
+    margin-bottom: 20px;
+
+    .notice {
+        margin: 10px 0;
+        padding: 10px;
+        border-left: 4px solid #0073aa; /* Default WP Blue */
+    }
+
+    .notice, .updated, .error {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+#footer-left {
+    width: 100%;
+    text-align: center;
+
+    #goug-admin-footer {
+        font-size: 16px;
+    }
+}

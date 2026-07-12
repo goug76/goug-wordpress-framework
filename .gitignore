@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Vite build output
+dist/
+
+# Logs
+*.log
+debug.log
+
+# Local environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
