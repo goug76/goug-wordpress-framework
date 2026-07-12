@@ -13,6 +13,7 @@ namespace GOUG\Inc\Dashboard;
 defined( 'ABSPATH' ) || exit;
 
 use GOUG\Inc\Dashboard\Services\Site_Service;
+use GOUG\Inc\Dashboard\Services\User_Service;
 
 /**
  * Provides data for the custom admin dashboard.
@@ -45,6 +46,13 @@ class Dashboard_Data {
 	private $site_service;
 
 	/**
+	 * User data service.
+	 *
+	 * @var User_Service
+	 */
+	private $user_service;
+
+	/**
 	 * Cached content counts for the current request.
 	 *
 	 * @var array|null
@@ -72,6 +80,7 @@ class Dashboard_Data {
 
 		$this->registry     = new Dashboard_Registry();
 		$this->site_service = new Site_Service();
+		$this->user_service = new User_Service();
 	}
 
 	/**
@@ -85,7 +94,7 @@ class Dashboard_Data {
 
 		return array(
 			'site'           => $this->site_service->get_data(),
-			'user'           => $this->get_user_data(),
+			'user'           => $this->user_service->get_data(),
 			'counts'         => $this->get_content_counts(),
 			'updates'        => $this->get_update_data(),
 			'system'         => $this->get_system_data(),
@@ -201,37 +210,6 @@ class Dashboard_Data {
 		do_action(
 			'goug_dashboard_register_panels',
 			$this->registry
-		);
-	}
-
-	/**
-	 * Return current-user information for the dashboard.
-	 *
-	 * @return array
-	 */
-	private function get_user_data() {
-
-		$current_user = wp_get_current_user();
-		$current_hour = (int) wp_date( 'G' );
-
-		if ( $current_hour < 12 ) {
-			$greeting = __( 'Good morning', 'goug-framework' );
-		} elseif ( $current_hour < 18 ) {
-			$greeting = __( 'Good afternoon', 'goug-framework' );
-		} else {
-			$greeting = __( 'Good evening', 'goug-framework' );
-		}
-
-		return array(
-			'display_name' => $current_user->display_name,
-			'greeting'     => $greeting,
-			'date'         => wp_date( 'l, F j, Y' ),
-			'avatar_url'   => get_avatar_url(
-				$current_user->ID,
-				array(
-					'size' => 96,
-				)
-			),
 		);
 	}
 
