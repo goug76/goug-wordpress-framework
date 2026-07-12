@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 use GOUG\Inc\Dashboard\Services\Site_Service;
 use GOUG\Inc\Dashboard\Services\User_Service;
 use GOUG\Inc\Dashboard\Services\Update_Service;
+use GOUG\Inc\Dashboard\Services\System_Service;
 
 /**
  * Provides data for the custom admin dashboard.
@@ -61,18 +62,18 @@ class Dashboard_Data {
 	private $update_service;
 
 	/**
+	 * System data service.
+	 *
+	 * @var System_Service
+	 */
+	private $system_service;
+
+	/**
 	 * Cached content counts for the current request.
 	 *
 	 * @var array|null
 	 */
 	private $content_counts = null;
-
-	/**
-	 * Cached system information for the current request.
-	 *
-	 * @var array|null
-	 */
-	private $system_data = null;
 
 	/**
 	 * Initialize the dashboard data provider.
@@ -83,6 +84,7 @@ class Dashboard_Data {
 		$this->site_service = new Site_Service();
 		$this->user_service = new User_Service();
 		$this->update_service = new Update_Service();
+		$this->system_service = new System_Service();
 	}
 
 	/**
@@ -99,7 +101,7 @@ class Dashboard_Data {
 			'user'           => $this->user_service->get_data(),
 			'counts'         => $this->get_content_counts(),
 			'updates'        => $this->update_service->get_data(),
-			'system'         => $this->get_system_data(),
+			'system'         => $this->system_service->get_data(),
 			'actions'        => $this->get_action_data(),
 			'overview'       => $this->get_overview_data(),
 			'system_updates' => $this->get_system_updates_data(),
@@ -271,36 +273,6 @@ class Dashboard_Data {
 		);
 
 		return $this->content_counts;
-	}
-
-	/**
-	 * Return lightweight system information.
-	 *
-	 * @return array
-	 */
-	private function get_system_data() {
-
-		if ( null !== $this->system_data ) {
-			return $this->system_data;
-		}
-
-		global $wp_version;
-
-		$theme = wp_get_theme();
-
-		$this->system_data = array(
-			'wordpress_version' => (string) $wp_version,
-			'php_version'       => PHP_VERSION,
-			'theme_name'        => $theme->get( 'Name' ),
-			'theme_version'     => $theme->get( 'Version' ),
-			'is_https'          => is_ssl(),
-			'debug_enabled'     => defined( 'WP_DEBUG' ) && WP_DEBUG,
-			'environment'       => function_exists( 'wp_get_environment_type' )
-				? wp_get_environment_type()
-				: 'production',
-		);
-
-		return $this->system_data;
 	}
 
 	/**
@@ -795,7 +767,7 @@ class Dashboard_Data {
 	private function get_site_status_data() {
 
 		$updates = $this->update_service->get_data();
-		$system  = $this->get_system_data();
+		$system  = $this->system_service->get_data();
 
 		$environment = ucfirst(
 			str_replace(
