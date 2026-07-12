@@ -1,0 +1,177 @@
+/**
+ * Site Status strip and status cards.
+ */
+
+.goug-panel--status {
+	grid-column: span 12;
+}
+
+.goug-status-grid {
+	display: grid;
+	grid-template-columns:
+		repeat(
+			auto-fit,
+			minmax(min(190px, 100%), 1fr)
+		);
+	gap: 12px;
+	width: 100%;
+	min-width: 0;
+}
+
+.goug-status-card {
+	display: flex;
+	align-items: center;
+	gap: 13px;
+
+	min-width: 0;
+	min-height: 94px;
+	padding: 14px;
+
+	background:
+		linear-gradient(
+			145deg,
+			rgba(13, 44, 71, 0.96),
+			rgba(8, 31, 52, 0.98)
+		);
+
+	border: 1px solid rgba(35, 219, 229, 0.14);
+	border-radius: var(--goug-radius-medium);
+
+	color: var(--goug-color-text);
+	text-decoration: none;
+
+	transition:
+		transform var(--goug-transition-fast),
+		border-color var(--goug-transition-fast),
+		background var(--goug-transition-fast);
+
+	&:hover,
+	&:focus-visible {
+		transform: translateY(-4px) scale(1.01);
+		background: var(--goug-color-card-hover);
+		border-color: var(--goug-color-border-strong);
+		box-shadow: 0 16px 30px rgba(0, 0, 0, 0.2);
+		color: var(--goug-color-text);
+		text-decoration: none;
+		outline: none;
+	}
+}
+
+.goug-status-card__icon-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+
+	width: 48px;
+	height: 48px;
+
+	background: rgba(35, 219, 229, 0.1);
+	border: 1px solid rgba(35, 219, 229, 0.14);
+	border-radius: 50%;
+}
+
+.goug-status-card__icon {
+	width: auto;
+	height: auto;
+
+	color: var(--goug-color-primary-bright);
+	font-size: 25px;
+	line-height: 1;
+}
+
+.goug-status-card__content {
+	display: grid;
+	gap: 3px;
+	min-width: 0;
+}
+
+.goug-status-card__label {
+	overflow: hidden;
+
+	color: var(--goug-color-text-muted);
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.2;
+
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.goug-status-card__value {
+	overflow: hidden;
+
+	color: var(--goug-color-text);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.25;
+
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.goug-status-card__meta {
+	overflow: hidden;
+
+	color: var(--goug-color-text-subtle);
+	font-size: 11px;
+	line-height: 1.3;
+
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.goug-status-card--success {
+	.goug-status-card__icon-wrap {
+		background: rgba(54, 211, 153, 0.1);
+		border-color: rgba(54, 211, 153, 0.2);
+	}
+
+	.goug-status-card__icon,
+	.goug-status-card__value {
+		color: #36d399;
+	}
+}
+
+.goug-status-card--warning {
+	.goug-status-card__icon-wrap {
+		background: rgba(251, 191, 36, 0.1);
+		border-color: rgba(251, 191, 36, 0.22);
+	}
+
+	.goug-status-card__icon,
+	.goug-status-card__value {
+		color: #fbbf24;
+	}
+}
+
+.goug-status-card--info {
+	.goug-status-card__icon,
+	.goug-status-card__value {
+		color: var(--goug-color-primary-bright);
+	}
+}
+
+.goug-status-card--error {
+	.goug-status-card__icon-wrap {
+		background: rgba(248, 113, 113, 0.1);
+		border-color: rgba(248, 113, 113, 0.22);
+	}
+
+	.goug-status-card__icon,
+	.goug-status-card__value {
+		color: #f87171;
+	}
+}
+
+.goug-status-card--unknown {
+	.goug-status-card__icon-wrap {
+		background: rgba(148, 163, 184, 0.1);
+		border-color: rgba(148, 163, 184, 0.2);
+	}
+
+	.goug-status-card__icon,
+	.goug-status-card__value {
+		color: #94a3b8;
+	}
+}

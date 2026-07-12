@@ -1,0 +1,447 @@
+/**
+ * GOUG Framework dashboard shell.
+ *
+ * Controls the dashboard page background, outer layout,
+ * header, workspace grid, panels, card grids, and base cards.
+ */
+
+:root {
+	--goug-color-background: #011120;
+	--goug-color-surface: #071b2d;
+	--goug-color-surface-raised: #0b2237;
+
+	--goug-color-primary: #18bcd8;
+	--goug-color-primary-bright: #23dbe5;
+
+	--goug-color-text: #ffffff;
+	--goug-color-text-muted: rgba(255, 255, 255, 0.68);
+
+	--goug-color-border: rgba(35, 219, 229, 0.18);
+	--goug-color-border-hover: rgba(35, 219, 229, 0.48);
+
+	--goug-radius-small: 8px;
+	--goug-radius-medium: 12px;
+	--goug-radius-large: 16px;
+
+	--goug-shadow-panel:
+		0 18px 45px rgba(0, 0, 0, 0.28),
+		0 0 0 1px rgba(35, 219, 229, 0.06);
+
+	--goug-content-width: 1540px;
+	--goug-space-page: clamp(16px, 2vw, 32px);
+	--goug-space-panel: clamp(20px, 2vw, 32px);
+}
+
+/*
+ * Dashboard page background.
+ */
+body.goug-dashboard-page {
+	background:
+		linear-gradient(
+			rgba(1, 17, 32, 0.84),
+			rgba(1, 17, 32, 0.94)
+		),
+		url("../assets/images/background.webp")
+			center center / cover fixed no-repeat;
+
+	color: var(--goug-color-text);
+
+	#wpcontent {
+		padding-left: 0;
+	}
+
+	#wpbody-content {
+		padding-bottom: 40px;
+	}
+}
+
+/*
+ * Main dashboard wrapper.
+ */
+.goug-dashboard {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: var(--goug-space-page);
+	font-size: 16px;
+	text-align: left;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+}
+
+/*
+ * Centered dashboard shell.
+ */
+.goug-dashboard__shell {
+	display: grid;
+	gap: 18px;
+	width: 100%;
+	max-width: var(--goug-content-width);
+	margin: 0 auto;
+}
+
+/*
+ * Dashboard header.
+ */
+.goug-dashboard-header {
+	display: grid;
+	gap: 10px;
+	justify-items: start;
+
+	width: 100%;
+	margin: 0;
+	padding: var(--goug-space-panel);
+
+	overflow: hidden;
+
+	background:
+		linear-gradient(
+			110deg,
+			rgba(7, 27, 45, 0.96),
+			rgba(1, 17, 32, 0.82)
+		);
+
+	border: 1px solid var(--goug-color-border);
+	border-radius: var(--goug-radius-large);
+	box-shadow: var(--goug-shadow-panel);
+
+	color: var(--goug-color-text);
+	text-align: left;
+
+	a {
+		display: inline-flex;
+		align-items: center;
+		max-width: min(420px, 100%);
+		text-decoration: none;
+	}
+
+	img {
+		display: block;
+		width: auto;
+		max-width: 100%;
+		height: auto;
+		max-height: 74px;
+		object-fit: contain;
+		object-position: left center;
+	}
+
+	h1 {
+		margin: 8px 0 0;
+		color: var(--goug-color-text);
+		font-size: clamp(24px, 2vw, 34px);
+		font-weight: 650;
+		line-height: 1.25;
+	}
+
+	p {
+		max-width: 760px;
+		margin: 0;
+		color: var(--goug-color-text-muted);
+		font-size: 15px;
+		line-height: 1.6;
+	}
+}
+
+/*
+ * Main dashboard workspace.
+ */
+.goug-dashboard__workspace {
+	width: 100%;
+	min-width: 0;
+}
+
+/*
+ * Twelve-column dashboard grid.
+ */
+.goug-dashboard__grid {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 18px;
+	width: 100%;
+	min-width: 0;
+}
+
+/*
+ * Reusable panel.
+ */
+.goug-panel {
+	width: 100%;
+	min-width: 0;
+	overflow: hidden;
+
+	background:
+		linear-gradient(
+			145deg,
+			rgba(11, 34, 55, 0.96),
+			rgba(7, 27, 45, 0.9)
+		);
+
+	border: 1px solid var(--goug-color-border);
+	border-radius: var(--goug-radius-medium);
+	box-shadow:
+		0 12px 30px rgba(0, 0, 0, 0.18),
+		inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+/*
+ * Essential Actions currently spans the entire grid.
+ */
+.goug-panel--essential {
+	grid-column: span 7;
+}
+
+.goug-panel--overview {
+	grid-column: span 5;
+}
+
+.goug-card-grid--metrics {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.goug-panel__header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 16px 18px;
+
+	border-bottom: 1px solid rgba(35, 219, 229, 0.12);
+}
+
+.goug-panel__icon {
+	width: auto;
+	height: auto;
+	color: var(--goug-color-primary-bright);
+	font-size: 20px;
+	line-height: 1;
+}
+
+.goug-panel__title {
+	margin: 0;
+	color: var(--goug-color-text);
+	font-size: 17px;
+	font-weight: 650;
+	line-height: 1.3;
+}
+
+.goug-panel__body {
+	padding: 18px;
+}
+
+/*
+ * Reusable card grid.
+ */
+.goug-card-grid {
+	display: grid;
+	grid-template-columns:
+		repeat(
+			auto-fit,
+			minmax(min(190px, 100%), 1fr)
+		);
+
+	gap: 14px;
+	width: 100%;
+	min-width: 0;
+}
+
+/*
+ * Reusable card.
+ */
+.goug-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 18px;
+
+	background:
+		linear-gradient(
+			145deg,
+			rgba(14, 43, 68, 0.96),
+			rgba(8, 29, 48, 0.96)
+		);
+
+	border: 1px solid rgba(35, 219, 229, 0.14);
+	border-radius: var(--goug-radius-medium);
+
+	color: var(--goug-color-text);
+	text-decoration: none;
+
+	transition:
+		transform 160ms ease,
+		border-color 160ms ease,
+		background 160ms ease;
+
+	&:hover,
+	&:focus-visible {
+		transform: translateY(-2px);
+
+		background:
+			linear-gradient(
+				145deg,
+				rgba(17, 52, 82, 0.98),
+				rgba(8, 31, 51, 0.98)
+			);
+
+		border-color: var(--goug-color-border-hover);
+		color: var(--goug-color-text);
+		text-decoration: none;
+	}
+}
+
+.goug-card__icon {
+	width: auto;
+	height: auto;
+
+	color: var(--goug-color-primary-bright);
+	font-size: 28px;
+	line-height: 1;
+}
+
+.goug-card__content {
+	display: grid;
+	gap: 6px;
+}
+
+.goug-card__title {
+	color: var(--goug-color-text);
+	font-size: 16px;
+	font-weight: 650;
+	line-height: 1.25;
+}
+
+.goug-card__description {
+	color: var(--goug-color-text-muted);
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.goug-card__badge {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+
+	background: var(--goug-color-primary);
+	border-radius: 999px;
+
+	color: var(--goug-color-background);
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/*
+ * Metric cards used by Site Overview.
+ */
+.goug-card--metric {
+	align-items: center;
+	justify-content: center;
+	min-height: 132px;
+	text-align: center;
+
+	.goug-card__icon {
+		font-size: 30px;
+	}
+
+	.goug-card__content {
+		justify-items: center;
+	}
+
+	.goug-card__title {
+		font-size: 18px;
+	}
+
+	.goug-card__description {
+		font-size: 12px;
+	}
+}
+
+/*
+ * Dashboard notices.
+ */
+.goug-notices {
+	width: 100%;
+	max-width: var(--goug-content-width);
+	margin: 0 auto;
+	padding: 0 var(--goug-space-page);
+}
+
+/*
+ * Footer text on the custom dashboard.
+ */
+body.goug-dashboard-page #footer-left,
+body.goug-dashboard-page #footer-upgrade {
+	color: var(--goug-color-text-muted);
+}
+
+/*
+ * Tablet layout.
+ */
+@media screen and (max-width: 1100px) {
+	.goug-panel--essential,
+	.goug-panel--overview {
+		grid-column: span 12;
+	}
+}
+
+/*
+ * Mobile layout.
+ */
+@media screen and (max-width: 782px) {
+	body.goug-dashboard-page #wpcontent {
+		padding-left: 0;
+	}
+
+	.goug-dashboard {
+		padding: 12px;
+	}
+
+	.goug-dashboard__shell {
+		gap: 12px;
+	}
+
+	.goug-dashboard-header {
+		justify-items: center;
+		padding: 18px;
+		border-radius: var(--goug-radius-medium);
+		text-align: center;
+
+		h1,
+		p {
+			text-align: center;
+		}
+
+		img {
+			max-height: 58px;
+		}
+	}
+
+	.goug-panel__header,
+	.goug-panel__body {
+		padding: 16px;
+	}
+
+	.goug-card-grid {
+		grid-template-columns: 1fr;
+	}
+
+    .goug-card-grid--metrics {
+        grid-template-columns: 1fr;
+    }
+}

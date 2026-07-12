@@ -1,0 +1,60 @@
+/**
+ * Dashboard Quick Actions.
+ */
+
+.goug-quick-actions {
+	display: grid;
+	gap: 18px;
+}
+
+.goug-quick-actions__group {
+	display: grid;
+	gap: 10px;
+}
+
+.goug-quick-actions__group-title {
+	margin: 0;
+	color: var(--goug-color-text-muted);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.3;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.goug-card-grid--quick-actions {
+	grid-template-columns:
+		repeat(
+			auto-fit,
+			minmax(min(118px, 100%), 1fr)
+		);
+	gap: 10px;
+}
+
+.goug-card--compact {
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+
+	min-height: 104px;
+	padding: 13px 10px;
+
+	text-align: center;
+
+	.goug-card__icon {
+		font-size: 25px;
+	}
+
+	.goug-card__content {
+		justify-items: center;
+		gap: 3px;
+	}
+
+	.goug-card__title {
+		font-size: 13px;
+	}
+
+	.goug-card__description {
+		display: none;
+	}
+}

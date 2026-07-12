@@ -1,0 +1,35 @@
+/**
+ * Dashboard design tokens.
+ */
+
+:root {
+	--goug-color-background: #011120;
+	--goug-color-panel: #08243a;
+	--goug-color-panel-raised: #0a2b45;
+	--goug-color-card: #10314d;
+	--goug-color-card-hover: #153c5a;
+
+	--goug-color-primary: #18bcd8;
+	--goug-color-primary-bright: #23dbe5;
+
+	--goug-color-text: #ffffff;
+	--goug-color-text-muted: rgba(255, 255, 255, 0.7);
+	--goug-color-text-subtle: rgba(255, 255, 255, 0.5);
+
+	--goug-color-border: rgba(35, 219, 229, 0.19);
+	--goug-color-border-strong: rgba(35, 219, 229, 0.42);
+
+	--goug-radius-small: 8px;
+	--goug-radius-medium: 12px;
+	--goug-radius-large: 16px;
+
+	--goug-shadow-panel:
+		0 14px 34px rgba(0, 0, 0, 0.18),
+		inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+	--goug-transition-fast: 160ms ease;
+
+	--goug-space-page: clamp(12px, 1.4vw, 24px);
+	--goug-space-grid: clamp(12px, 1.2vw, 18px);
+	--goug-space-panel: clamp(16px, 1.4vw, 22px);
+}

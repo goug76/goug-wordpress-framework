@@ -12,6 +12,8 @@ namespace GOUG\Inc\Dashboard;
 
 defined( 'ABSPATH' ) || exit;
 
+use GOUG\Inc\Dashboard\Services\Site_Service;
+
 /**
  * Provides data for the custom admin dashboard.
  *
@@ -20,6 +22,27 @@ defined( 'ABSPATH' ) || exit;
  * when the dashboard coordinator requests it.
  */
 class Dashboard_Data {
+
+	/**
+	 * Dashboard panel registry.
+	 *
+	 * @var Dashboard_Registry
+	 */
+	private $registry;
+
+	/**
+	 * Whether default panels have been registered.
+	 *
+	 * @var bool
+	 */
+	private $panels_registered = false;
+
+	/**
+	 * Site data service.
+	 *
+	 * @var Site_Service
+	 */
+	private $site_service;
 
 	/**
 	 * Cached content counts for the current request.
@@ -36,42 +59,179 @@ class Dashboard_Data {
 	private $update_data = null;
 
 	/**
+	 * Cached system information for the current request.
+	 *
+	 * @var array|null
+	 */
+	private $system_data = null;
+
+	/**
+	 * Initialize the dashboard data provider.
+	 */
+	public function __construct() {
+
+		$this->registry     = new Dashboard_Registry();
+		$this->site_service = new Site_Service();
+	}
+
+	/**
 	 * Return all currently supported dashboard data.
 	 *
 	 * @return array
 	 */
 	public function get_data() {
 
+		$this->register_default_panels();
+
 		return array(
-			'site'           => $this->get_site_data(),
-			'user' => array(
-					'display_name' => wp_get_current_user()->display_name,
-				),
+			'site'           => $this->site_service->get_data(),
+			'user'           => $this->get_user_data(),
 			'counts'         => $this->get_content_counts(),
 			'updates'        => $this->get_update_data(),
 			'system'         => $this->get_system_data(),
 			'actions'        => $this->get_action_data(),
 			'overview'       => $this->get_overview_data(),
 			'system_updates' => $this->get_system_updates_data(),
+			'site_status'    => $this->get_site_status_data(),
+
+			/*
+			* get_panels() belongs to Dashboard_Registry.
+			*/
+			'panels'         => $this->registry->get_panels(),
 		);
 	}
 
 	/**
-	 * Return basic site information.
+	 * Register the default dashboard panels.
+	 *
+	 * @return void
+	 */
+	private function register_default_panels() {
+
+		if ( $this->panels_registered ) {
+			return;
+		}
+
+		$this->panels_registered = true;
+
+		$site_status = $this->get_site_status_data();
+		$actions     = $this->get_action_data();
+		$overview    = $this->get_overview_data();
+
+		$quick_action_groups = array_filter(
+			array(
+				$actions['essential'] ?? array(),
+				$actions['settings'] ?? array(),
+				$actions['design'] ?? array(),
+			)
+		);
+
+		if ( ! empty( $site_status['items'] ) ) {
+			$this->registry->register_panel(
+				array(
+					'id'         => 'site-status',
+					'title'      => $site_status['title'],
+					'icon'       => 'dashicons-performance',
+					'priority'   => 10,
+					'class_name' => 'goug-panel--status',
+					'body_view'  => 'dashboard/components/site-status',
+					'body_data'  => array(
+						'items' => $site_status['items'],
+					),
+					'capability' => 'manage_options',
+					'attributes' => array(
+						'data-panel-id' => 'site-status',
+					),
+				)
+			);
+		}
+
+		if ( ! empty( $quick_action_groups ) ) {
+			$this->registry->register_panel(
+				array(
+					'id'         => 'quick-actions',
+					'title'      => __(
+						'Quick Actions',
+						'goug-framework'
+					),
+					'icon'       => 'dashicons-lightning',
+					'priority'   => 20,
+					'class_name' => 'goug-panel--quick-actions',
+					'body_view'  => 'dashboard/components/quick-actions',
+					'body_data'  => array(
+						'groups' => $quick_action_groups,
+					),
+					'capability' => 'manage_options',
+					'attributes' => array(
+						'data-panel-id' => 'quick-actions',
+					),
+				)
+			);
+		}
+
+		if ( ! empty( $overview['items'] ) ) {
+			$this->registry->register_panel(
+				array(
+					'id'         => 'site-overview',
+					'title'      => $overview['title'],
+					'icon'       => 'dashicons-chart-bar',
+					'priority'   => 30,
+					'class_name' => 'goug-panel--overview',
+					'body_view'  => 'components/card-grid',
+					'body_data'  => array(
+						'items'      => $overview['items'],
+						'class_name' => 'goug-card-grid--metrics',
+						'card_class' => 'goug-card--metric',
+					),
+					'capability' => 'manage_options',
+					'attributes' => array(
+						'data-panel-id' => 'site-overview',
+					),
+				)
+			);
+		}
+
+		/**
+		 * Fires after default dashboard panels are registered.
+		 *
+		 * External code may register or unregister panels here.
+		 *
+		 * @param Dashboard_Registry $registry Dashboard registry.
+		 */
+		do_action(
+			'goug_dashboard_register_panels',
+			$this->registry
+		);
+	}
+
+	/**
+	 * Return current-user information for the dashboard.
 	 *
 	 * @return array
 	 */
-	private function get_site_data() {
+	private function get_user_data() {
 
-		$site_name = get_bloginfo( 'name' );
+		$current_user = wp_get_current_user();
+		$current_hour = (int) wp_date( 'G' );
+
+		if ( $current_hour < 12 ) {
+			$greeting = __( 'Good morning', 'goug-framework' );
+		} elseif ( $current_hour < 18 ) {
+			$greeting = __( 'Good afternoon', 'goug-framework' );
+		} else {
+			$greeting = __( 'Good evening', 'goug-framework' );
+		}
 
 		return array(
-			'name'        => $site_name
-				? $site_name
-				: __( 'WordPress', 'goug-framework' ),
-			'description' => get_bloginfo( 'description' ),
-			'url'         => home_url( '/' ),
-			'admin_url'   => admin_url(),
+			'display_name' => $current_user->display_name,
+			'greeting'     => $greeting,
+			'date'         => wp_date( 'l, F j, Y' ),
+			'avatar_url'   => get_avatar_url(
+				$current_user->ID,
+				array(
+					'size' => 96,
+				)
+			),
 		);
 	}
 
@@ -181,11 +341,15 @@ class Dashboard_Data {
 	 */
 	private function get_system_data() {
 
+		if ( null !== $this->system_data ) {
+			return $this->system_data;
+		}
+
 		global $wp_version;
 
 		$theme = wp_get_theme();
 
-		return array(
+		$this->system_data = array(
 			'wordpress_version' => (string) $wp_version,
 			'php_version'       => PHP_VERSION,
 			'theme_name'        => $theme->get( 'Name' ),
@@ -196,6 +360,8 @@ class Dashboard_Data {
 				? wp_get_environment_type()
 				: 'production',
 		);
+
+		return $this->system_data;
 	}
 
 	/**
@@ -254,14 +420,6 @@ class Dashboard_Data {
 					'url'         => admin_url( 'themes.php' ),
 					'capability'  => 'switch_themes',
 					'description' => __( 'View and manage themes', 'goug-framework' ),
-				),
-				array(
-					'title'       => __( 'Site', 'goug-framework' ),
-					'icon'        => 'dashicons-admin-site',
-					'url'         => home_url( '/' ),
-					'capability'  => 'read',
-					'description' => __( 'Visit the website', 'goug-framework' ),
-					'target'      => '_blank',
 				),
 			)
 		);
@@ -687,6 +845,137 @@ class Dashboard_Data {
 		return apply_filters(
 			'goug_dashboard_system_updates',
 			$system_updates
+		);
+	}
+
+	/**
+	 * Return prepared Site Status card data.
+	 *
+	 * @return array
+	 */
+	private function get_site_status_data() {
+
+		$updates = $this->get_update_data();
+		$system  = $this->get_system_data();
+
+		$environment = ucfirst(
+			str_replace(
+				array( '-', '_' ),
+				' ',
+				$system['environment']
+			)
+		);
+
+		$site_status = array(
+			'title' => __( 'Site Status', 'goug-framework' ),
+			'items' => array(
+				array(
+					'label' => __( 'WordPress', 'goug-framework' ),
+					'value' => $updates['core'] > 0
+						? __( 'Update available', 'goug-framework' )
+						: __( 'Up to date', 'goug-framework' ),
+					'meta'  => $system['wordpress_version'],
+					'icon'  => 'dashicons-wordpress',
+					'state' => $updates['core'] > 0
+						? 'warning'
+						: 'success',
+					'url'   => admin_url( 'update-core.php' ),
+				),
+				array(
+					'label' => __( 'Plugins', 'goug-framework' ),
+					'value' => $updates['plugins'] > 0
+						? sprintf(
+							/* translators: %d: Number of plugin updates. */
+							_n(
+								'%d update',
+								'%d updates',
+								$updates['plugins'],
+								'goug-framework'
+							),
+							$updates['plugins']
+						)
+						: __( 'Up to date', 'goug-framework' ),
+					'meta'  => $updates['plugins'] > 0
+						? __( 'View updates', 'goug-framework' )
+						: __( 'No updates pending', 'goug-framework' ),
+					'icon'  => 'dashicons-admin-plugins',
+					'state' => $updates['plugins'] > 0
+						? 'warning'
+						: 'success',
+					'url'   => admin_url( 'plugins.php?plugin_status=upgrade' ),
+				),
+				array(
+					'label' => __( 'Themes', 'goug-framework' ),
+					'value' => $updates['themes'] > 0
+						? sprintf(
+							/* translators: %d: Number of theme updates. */
+							_n(
+								'%d update',
+								'%d updates',
+								$updates['themes'],
+								'goug-framework'
+							),
+							$updates['themes']
+						)
+						: __( 'Up to date', 'goug-framework' ),
+					'meta'  => $updates['themes'] > 0
+						? __( 'View updates', 'goug-framework' )
+						: __( 'No updates pending', 'goug-framework' ),
+					'icon'  => 'dashicons-admin-appearance',
+					'state' => $updates['themes'] > 0
+						? 'warning'
+						: 'success',
+					'url'   => admin_url( 'update-core.php' ),
+				),
+				array(
+					'label' => __( 'HTTPS', 'goug-framework' ),
+					'value' => $system['is_https']
+						? __( 'Secure', 'goug-framework' )
+						: __( 'Not secure', 'goug-framework' ),
+					'meta'  => $system['is_https']
+						? __( 'Encrypted connection', 'goug-framework' )
+						: __( 'HTTPS is not active', 'goug-framework' ),
+					'icon'  => $system['is_https']
+						? 'dashicons-shield-alt'
+						: 'dashicons-warning',
+					'state' => $system['is_https']
+						? 'success'
+						: 'warning',
+					'url'   => admin_url( 'site-health.php' ),
+				),
+				array(
+					'label' => __( 'PHP', 'goug-framework' ),
+					'value' => $system['php_version'],
+					'meta'  => __( 'Runtime version', 'goug-framework' ),
+					'icon'  => 'dashicons-editor-code',
+					'state' => 'info',
+					'url'   => admin_url( 'site-health.php?tab=debug' ),
+				),
+				array(
+					'label' => __( 'Environment', 'goug-framework' ),
+					'value' => $environment,
+					'meta'  => $system['debug_enabled']
+						? __( 'Debug mode enabled', 'goug-framework' )
+						: __( 'Debug mode disabled', 'goug-framework' ),
+					'icon'  => 'dashicons-admin-site-alt3',
+					'state' => (
+						'production' === $system['environment'] &&
+						$system['debug_enabled']
+					)
+						? 'warning'
+						: 'info',
+				),
+			),
+		);
+
+		/**
+		 * Filter the dashboard Site Status cards.
+		 *
+		 * @param array $site_status Prepared Site Status data.
+		 */
+		return apply_filters(
+			'goug_dashboard_site_status',
+			$site_status
 		);
 	}
 }

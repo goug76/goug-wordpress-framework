@@ -37,3 +37,21 @@ function get_brand_logo_url( $size = 'full' ) {
 	return get_stylesheet_directory_uri()
 		. '/assets/images/gouglabs_logo_dark.webp';
 }
+
+/**
+ * Return the current WordPress Site Icon URL.
+ *
+ * Returns an empty string when no Site Icon is configured.
+ *
+ * @param int $size Requested square image size.
+ *
+ * @return string
+ */
+function get_brand_icon_url( $size = 96 ) {
+
+	$site_icon_url = get_site_icon_url( absint( $size ) );
+
+	return $site_icon_url
+		? $site_icon_url
+		: '';
+}

@@ -1,11 +1,13 @@
-@use 'sites/admin-dashboard';
+/**
+ * GOUG Framework admin styles.
+ */
 
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-5px);
-    }
-}
+@use "admin/dashboard-tokens";
+@use "admin/dashboard-layout";
+@use "admin/dashboard-header";
+@use "admin/dashboard-panels";
+@use "admin/dashboard-cards";
+@use "admin/dashboard-quick-actions";
+@use "admin/dashboard-status";
+@use "admin/dashboard-responsive";
 
