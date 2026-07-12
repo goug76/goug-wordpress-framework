@@ -14,6 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 use GOUG\Inc\Dashboard\Services\Site_Service;
 use GOUG\Inc\Dashboard\Services\User_Service;
+use GOUG\Inc\Dashboard\Services\Update_Service;
 
 /**
  * Provides data for the custom admin dashboard.
@@ -53,18 +54,18 @@ class Dashboard_Data {
 	private $user_service;
 
 	/**
+	 * Update data service.
+	 *
+	 * @var Update_Service
+	 */
+	private $update_service;
+
+	/**
 	 * Cached content counts for the current request.
 	 *
 	 * @var array|null
 	 */
 	private $content_counts = null;
-
-	/**
-	 * Cached WordPress update data for the current request.
-	 *
-	 * @var array|null
-	 */
-	private $update_data = null;
 
 	/**
 	 * Cached system information for the current request.
@@ -81,6 +82,7 @@ class Dashboard_Data {
 		$this->registry     = new Dashboard_Registry();
 		$this->site_service = new Site_Service();
 		$this->user_service = new User_Service();
+		$this->update_service = new Update_Service();
 	}
 
 	/**
@@ -96,7 +98,7 @@ class Dashboard_Data {
 			'site'           => $this->site_service->get_data(),
 			'user'           => $this->user_service->get_data(),
 			'counts'         => $this->get_content_counts(),
-			'updates'        => $this->get_update_data(),
+			'updates'        => $this->update_service->get_data(),
 			'system'         => $this->get_system_data(),
 			'actions'        => $this->get_action_data(),
 			'overview'       => $this->get_overview_data(),
@@ -269,47 +271,6 @@ class Dashboard_Data {
 		);
 
 		return $this->content_counts;
-	}
-
-	/**
-	 * Return available WordPress update counts.
-	 *
-	 * WordPress stores update information in transients, so this does not
-	 * perform a remote request whenever the dashboard is loaded.
-	 *
-	 * @return array
-	 */
-	private function get_update_data() {
-
-		if ( null !== $this->update_data ) {
-			return $this->update_data;
-		}
-
-		$update_data = wp_get_update_data();
-		$counts      = isset( $update_data['counts'] )
-			&& is_array( $update_data['counts'] )
-				? $update_data['counts']
-				: array();
-
-		$this->update_data = array(
-			'core' => isset( $counts['wordpress'] )
-				? (int) $counts['wordpress']
-				: 0,
-			'plugins' => isset( $counts['plugins'] )
-				? (int) $counts['plugins']
-				: 0,
-			'themes' => isset( $counts['themes'] )
-				? (int) $counts['themes']
-				: 0,
-			'translations' => isset( $counts['translations'] )
-				? (int) $counts['translations']
-				: 0,
-			'total' => isset( $counts['total'] )
-				? (int) $counts['total']
-				: 0,
-		);
-
-		return $this->update_data;
 	}
 
 	/**
@@ -728,7 +689,7 @@ class Dashboard_Data {
 	 */
 	private function get_system_updates_data() {
 
-		$updates = $this->get_update_data();
+		$updates = $this->update_service->get_data();
 
 		$system_updates = array(
 			'title' => __( 'System Updates', 'goug-framework' ),
@@ -833,7 +794,7 @@ class Dashboard_Data {
 	 */
 	private function get_site_status_data() {
 
-		$updates = $this->get_update_data();
+		$updates = $this->update_service->get_data();
 		$system  = $this->get_system_data();
 
 		$environment = ucfirst(
