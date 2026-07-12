@@ -16,6 +16,8 @@ use GOUG\Inc\Dashboard\Services\Site_Service;
 use GOUG\Inc\Dashboard\Services\User_Service;
 use GOUG\Inc\Dashboard\Services\Update_Service;
 use GOUG\Inc\Dashboard\Services\System_Service;
+use GOUG\Inc\Dashboard\Panels\Panel_Site_Status;
+use GOUG\Inc\Dashboard\Panels\Panel_Quick_Actions;
 
 /**
  * Provides data for the custom admin dashboard.
@@ -69,6 +71,20 @@ class Dashboard_Data {
 	private $system_service;
 
 	/**
+	 * Site Status panel module.
+	 *
+	 * @var Panel_Site_Status
+	 */
+	private $site_status_panel;
+
+	/**
+	 * Quick Actions panel module.
+	 *
+	 * @var Panel_Quick_Actions
+	 */
+	private $quick_actions_panel;
+
+	/**
 	 * Cached content counts for the current request.
 	 *
 	 * @var array|null
@@ -85,6 +101,13 @@ class Dashboard_Data {
 		$this->user_service = new User_Service();
 		$this->update_service = new Update_Service();
 		$this->system_service = new System_Service();
+
+		$this->site_status_panel = new Panel_Site_Status(
+			$this->update_service,
+			$this->system_service
+		);
+
+		$this->quick_actions_panel = new Panel_Quick_Actions();
 	}
 
 	/**
@@ -102,10 +125,8 @@ class Dashboard_Data {
 			'counts'         => $this->get_content_counts(),
 			'updates'        => $this->update_service->get_data(),
 			'system'         => $this->system_service->get_data(),
-			'actions'        => $this->get_action_data(),
 			'overview'       => $this->get_overview_data(),
 			'system_updates' => $this->get_system_updates_data(),
-			'site_status'    => $this->get_site_status_data(),
 
 			/*
 			* get_panels() belongs to Dashboard_Registry.
@@ -127,8 +148,6 @@ class Dashboard_Data {
 
 		$this->panels_registered = true;
 
-		$site_status = $this->get_site_status_data();
-		$actions     = $this->get_action_data();
 		$overview    = $this->get_overview_data();
 
 		$quick_action_groups = array_filter(
@@ -139,48 +158,13 @@ class Dashboard_Data {
 			)
 		);
 
-		if ( ! empty( $site_status['items'] ) ) {
-			$this->registry->register_panel(
-				array(
-					'id'         => 'site-status',
-					'title'      => $site_status['title'],
-					'icon'       => 'dashicons-performance',
-					'priority'   => 10,
-					'class_name' => 'goug-panel--status',
-					'body_view'  => 'dashboard/components/site-status',
-					'body_data'  => array(
-						'items' => $site_status['items'],
-					),
-					'capability' => 'manage_options',
-					'attributes' => array(
-						'data-panel-id' => 'site-status',
-					),
-				)
-			);
-		}
+		$this->site_status_panel->register(
+			$this->registry
+		);
 
-		if ( ! empty( $quick_action_groups ) ) {
-			$this->registry->register_panel(
-				array(
-					'id'         => 'quick-actions',
-					'title'      => __(
-						'Quick Actions',
-						'goug-framework'
-					),
-					'icon'       => 'dashicons-lightning',
-					'priority'   => 20,
-					'class_name' => 'goug-panel--quick-actions',
-					'body_view'  => 'dashboard/components/quick-actions',
-					'body_data'  => array(
-						'groups' => $quick_action_groups,
-					),
-					'capability' => 'manage_options',
-					'attributes' => array(
-						'data-panel-id' => 'quick-actions',
-					),
-				)
-			);
-		}
+		$this->quick_actions_panel->register(
+			$this->registry
+		);
 
 		if ( ! empty( $overview['items'] ) ) {
 			$this->registry->register_panel(
@@ -273,227 +257,6 @@ class Dashboard_Data {
 		);
 
 		return $this->content_counts;
-	}
-
-	/**
-	 * Return dashboard action groups.
-	 *
-	 * Each action follows a common schema so the dashboard card component
-	 * can render it consistently.
-	 *
-	 * @return array
-	 */
-	private function get_action_data() {
-
-		$essential_actions = array(
-			array(
-				'title'       => __( 'Posts', 'goug-framework' ),
-				'icon'        => 'dashicons-admin-post',
-				'url'         => admin_url( 'edit.php' ),
-				'capability'  => 'edit_posts',
-				'description' => __( 'View and manage posts', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Pages', 'goug-framework' ),
-				'icon'        => 'dashicons-admin-page',
-				'url'         => admin_url( 'edit.php?post_type=page' ),
-				'capability'  => 'edit_pages',
-				'description' => __( 'View and manage pages', 'goug-framework' ),
-			),
-		);
-
-		/*
-		* Add the Courses action only when its post type exists.
-		*/
-		if ( post_type_exists( 'courses' ) ) {
-			$essential_actions[] = array(
-				'title'       => __( 'Courses', 'goug-framework' ),
-				'icon'        => 'dashicons-welcome-learn-more',
-				'url'         => admin_url( 'admin.php?page=tutor' ),
-				'capability'  => 'edit_posts',
-				'description' => __( 'View and manage courses', 'goug-framework' ),
-			);
-		}
-
-		$essential_actions = array_merge(
-			$essential_actions,
-			array(
-				array(
-					'title'       => __( 'Plugins', 'goug-framework' ),
-					'icon'        => 'dashicons-admin-plugins',
-					'url'         => admin_url( 'plugins.php' ),
-					'capability'  => 'activate_plugins',
-					'description' => __( 'View and manage plugins', 'goug-framework' ),
-				),
-				array(
-					'title'       => __( 'Theme', 'goug-framework' ),
-					'icon'        => 'dashicons-admin-appearance',
-					'url'         => admin_url( 'themes.php' ),
-					'capability'  => 'switch_themes',
-					'description' => __( 'View and manage themes', 'goug-framework' ),
-				),
-			)
-		);
-
-		$settings_actions = array(
-			array(
-				'title'       => __( 'Updates', 'goug-framework' ),
-				'icon'        => 'dashicons-update',
-				'url'         => admin_url( 'update-core.php' ),
-				'capability'  => 'update_core',
-				'description' => __( 'Manage WordPress updates', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Users', 'goug-framework' ),
-				'icon'        => 'dashicons-admin-users',
-				'url'         => admin_url( 'users.php' ),
-				'capability'  => 'list_users',
-				'description' => __( 'View and manage users', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Permalinks', 'goug-framework' ),
-				'icon'        => 'dashicons-admin-links',
-				'url'         => admin_url( 'options-permalink.php' ),
-				'capability'  => 'manage_options',
-				'description' => __( 'Manage permalink settings', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Health', 'goug-framework' ),
-				'icon'        => 'dashicons-heart',
-				'url'         => admin_url( 'site-health.php' ),
-				'capability'  => 'manage_options',
-				'description' => __( 'View Site Health information', 'goug-framework' ),
-			),
-		);
-
-		$design_actions = array(
-			array(
-				'title'       => __( 'Menus', 'goug-framework' ),
-				'icon'        => 'dashicons-menu',
-				'url'         => admin_url( 'nav-menus.php' ),
-				'capability'  => 'edit_theme_options',
-				'description' => __( 'Manage navigation menus', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Widgets', 'goug-framework' ),
-				'icon'        => 'dashicons-admin-generic',
-				'url'         => admin_url( 'widgets.php' ),
-				'capability'  => 'edit_theme_options',
-				'description' => __( 'Manage widget areas', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Customize', 'goug-framework' ),
-				'icon'        => 'dashicons-admin-customizer',
-				'url'         => admin_url( 'customize.php' ),
-				'capability'  => 'edit_theme_options',
-				'description' => __( 'Open the Theme Customizer', 'goug-framework' ),
-			),
-			array(
-				'title'       => __( 'Editor', 'goug-framework' ),
-				'icon'        => 'dashicons-editor-code',
-				'url'         => admin_url( 'theme-editor.php' ),
-				'capability'  => 'edit_themes',
-				'description' => __( 'Open the Theme File Editor', 'goug-framework' ),
-				'visible'     => ! (
-					defined( 'DISALLOW_FILE_EDIT' ) &&
-					DISALLOW_FILE_EDIT
-				),
-			),
-		);
-
-		$actions = array(
-			'essential' => array(
-				'title' => __( 'Essential Actions', 'goug-framework' ),
-				'items' => $essential_actions,
-			),
-			'settings' => array(
-				'title' => __( 'Site Settings Actions', 'goug-framework' ),
-				'items' => $settings_actions,
-			),
-			'design' => array(
-				'title' => __( 'Site Design Actions', 'goug-framework' ),
-				'items' => $design_actions,
-			),
-		);
-
-		/**
-		 * Filter all dashboard action groups.
-		 *
-		 * Developers can add, remove, or modify action cards without editing
-		 * the framework templates.
-		 *
-		 * @param array $actions Dashboard action groups.
-		 */
-		$actions = apply_filters(
-			'goug_dashboard_actions',
-			$actions
-		);
-
-		return $this->filter_action_data( $actions );
-	}
-
-	/**
-	 * Remove invalid, hidden, and inaccessible dashboard actions.
-	 *
-	 * @param array $groups Dashboard action groups.
-	 *
-	 * @return array
-	 */
-	private function filter_action_data( $groups ) {
-
-		if ( ! is_array( $groups ) ) {
-			return array();
-		}
-
-		foreach ( $groups as $group_key => $group ) {
-
-			if (
-				! is_array( $group ) ||
-				empty( $group['items'] ) ||
-				! is_array( $group['items'] )
-			) {
-				unset( $groups[ $group_key ] );
-				continue;
-			}
-
-			$group['items'] = array_values(
-				array_filter(
-					$group['items'],
-					static function ( $action ) {
-
-						if (
-							! is_array( $action ) ||
-							empty( $action['title'] ) ||
-							empty( $action['url'] )
-						) {
-							return false;
-						}
-
-						if (
-							isset( $action['visible'] ) &&
-							false === (bool) $action['visible']
-						) {
-							return false;
-						}
-
-						$capability = ! empty( $action['capability'] )
-							? $action['capability']
-							: 'read';
-
-						return current_user_can( $capability );
-					}
-				)
-			);
-
-			if ( empty( $group['items'] ) ) {
-				unset( $groups[ $group_key ] );
-				continue;
-			}
-
-			$groups[ $group_key ] = $group;
-		}
-
-		return $groups;
 	}
 
 	/**
@@ -759,134 +522,4 @@ class Dashboard_Data {
 		);
 	}
 
-	/**
-	 * Return prepared Site Status card data.
-	 *
-	 * @return array
-	 */
-	private function get_site_status_data() {
-
-		$updates = $this->update_service->get_data();
-		$system  = $this->system_service->get_data();
-
-		$environment = ucfirst(
-			str_replace(
-				array( '-', '_' ),
-				' ',
-				$system['environment']
-			)
-		);
-
-		$site_status = array(
-			'title' => __( 'Site Status', 'goug-framework' ),
-			'items' => array(
-				array(
-					'label' => __( 'WordPress', 'goug-framework' ),
-					'value' => $updates['core'] > 0
-						? __( 'Update available', 'goug-framework' )
-						: __( 'Up to date', 'goug-framework' ),
-					'meta'  => $system['wordpress_version'],
-					'icon'  => 'dashicons-wordpress',
-					'state' => $updates['core'] > 0
-						? 'warning'
-						: 'success',
-					'url'   => admin_url( 'update-core.php' ),
-				),
-				array(
-					'label' => __( 'Plugins', 'goug-framework' ),
-					'value' => $updates['plugins'] > 0
-						? sprintf(
-							/* translators: %d: Number of plugin updates. */
-							_n(
-								'%d update',
-								'%d updates',
-								$updates['plugins'],
-								'goug-framework'
-							),
-							$updates['plugins']
-						)
-						: __( 'Up to date', 'goug-framework' ),
-					'meta'  => $updates['plugins'] > 0
-						? __( 'View updates', 'goug-framework' )
-						: __( 'No updates pending', 'goug-framework' ),
-					'icon'  => 'dashicons-admin-plugins',
-					'state' => $updates['plugins'] > 0
-						? 'warning'
-						: 'success',
-					'url'   => admin_url( 'plugins.php?plugin_status=upgrade' ),
-				),
-				array(
-					'label' => __( 'Themes', 'goug-framework' ),
-					'value' => $updates['themes'] > 0
-						? sprintf(
-							/* translators: %d: Number of theme updates. */
-							_n(
-								'%d update',
-								'%d updates',
-								$updates['themes'],
-								'goug-framework'
-							),
-							$updates['themes']
-						)
-						: __( 'Up to date', 'goug-framework' ),
-					'meta'  => $updates['themes'] > 0
-						? __( 'View updates', 'goug-framework' )
-						: __( 'No updates pending', 'goug-framework' ),
-					'icon'  => 'dashicons-admin-appearance',
-					'state' => $updates['themes'] > 0
-						? 'warning'
-						: 'success',
-					'url'   => admin_url( 'update-core.php' ),
-				),
-				array(
-					'label' => __( 'HTTPS', 'goug-framework' ),
-					'value' => $system['is_https']
-						? __( 'Secure', 'goug-framework' )
-						: __( 'Not secure', 'goug-framework' ),
-					'meta'  => $system['is_https']
-						? __( 'Encrypted connection', 'goug-framework' )
-						: __( 'HTTPS is not active', 'goug-framework' ),
-					'icon'  => $system['is_https']
-						? 'dashicons-shield-alt'
-						: 'dashicons-warning',
-					'state' => $system['is_https']
-						? 'success'
-						: 'warning',
-					'url'   => admin_url( 'site-health.php' ),
-				),
-				array(
-					'label' => __( 'PHP', 'goug-framework' ),
-					'value' => $system['php_version'],
-					'meta'  => __( 'Runtime version', 'goug-framework' ),
-					'icon'  => 'dashicons-editor-code',
-					'state' => 'info',
-					'url'   => admin_url( 'site-health.php?tab=debug' ),
-				),
-				array(
-					'label' => __( 'Environment', 'goug-framework' ),
-					'value' => $environment,
-					'meta'  => $system['debug_enabled']
-						? __( 'Debug mode enabled', 'goug-framework' )
-						: __( 'Debug mode disabled', 'goug-framework' ),
-					'icon'  => 'dashicons-admin-site-alt3',
-					'state' => (
-						'production' === $system['environment'] &&
-						$system['debug_enabled']
-					)
-						? 'warning'
-						: 'info',
-				),
-			),
-		);
-
-		/**
-		 * Filter the dashboard Site Status cards.
-		 *
-		 * @param array $site_status Prepared Site Status data.
-		 */
-		return apply_filters(
-			'goug_dashboard_site_status',
-			$site_status
-		);
-	}
 }
