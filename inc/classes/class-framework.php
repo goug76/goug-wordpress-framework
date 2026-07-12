@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
 
 use GOUG\Inc\Traits\Singleton;
 
-class GOUG_THEME 
+class FRAMEWORK 
 {
     use Singleton;
 

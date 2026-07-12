@@ -22,7 +22,7 @@ if ( ! defined( 'GOUG_DIR_PATH' ) ) {
 	define( 'GOUG_DIR_PATH', untrailingslashit( get_stylesheet_directory() ) );
 }
 
-\GOUG\Inc\GOUG_THEME::get_instance();
+\GOUG\Inc\FRAMEWORK::get_instance();
 
 add_action('init', function() {
     flush_rewrite_rules();
