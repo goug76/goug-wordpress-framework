@@ -29,8 +29,8 @@
 - [x] Site Status panel
 - [x] Quick Actions panel
 - [x] Site Overview panel
-- [ ] Modular panel classes
-- [ ] System Updates panel
+- [x] Modular panel classes
+- [x] Remove redundant System Updates panel
 - [ ] Site Health panel
 - [ ] Recent Activity panel
 - [ ] Quick Draft panel

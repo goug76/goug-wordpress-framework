@@ -139,7 +139,6 @@ class Dashboard_Data {
 			'counts'         => $this->content_service->get_data(),
 			'updates'        => $this->update_service->get_data(),
 			'system'         => $this->system_service->get_data(),
-			'system_updates' => $this->get_system_updates_data(),
 
 			/*
 			* get_panels() belongs to Dashboard_Registry.
@@ -181,111 +180,6 @@ class Dashboard_Data {
 		do_action(
 			'goug_dashboard_register_panels',
 			$this->registry
-		);
-	}
-
-	/**
-	 * Return prepared System Updates card data.
-	 *
-	 * @return array
-	 */
-	private function get_system_updates_data() {
-
-		$updates = $this->update_service->get_data();
-
-		$system_updates = array(
-			'title' => __( 'System Updates', 'goug-framework' ),
-			'items' => array(
-				array(
-					'title'  => __( 'WordPress Core', 'goug-framework' ),
-					'icon'   => 'dashicons-wordpress',
-					'url'    => admin_url( 'update-core.php' ),
-					'count'  => $updates['core'],
-					'status' => $updates['core'] > 0
-						? __( 'Update Available', 'goug-framework' )
-						: __( 'Up to date', 'goug-framework' ),
-					'state'  => $updates['core'] > 0
-						? 'warning'
-						: 'success',
-				),
-				array(
-					'title'  => __( 'Plugins', 'goug-framework' ),
-					'icon'   => 'dashicons-admin-plugins',
-					'url'    => admin_url( 'plugins.php?plugin_status=upgrade' ),
-					'count'  => $updates['plugins'],
-					'status' => $updates['plugins'] > 0
-						? sprintf(
-							/* translators: %d: Number of plugin updates. */
-							_n(
-								'%d update available',
-								'%d updates available',
-								$updates['plugins'],
-								'goug-framework'
-							),
-							$updates['plugins']
-						)
-						: __( 'Up to date', 'goug-framework' ),
-					'state'  => $updates['plugins'] > 0
-						? 'warning'
-						: 'success',
-				),
-				array(
-					'title'  => __( 'Themes', 'goug-framework' ),
-					'icon'   => 'dashicons-admin-appearance',
-					'url'    => admin_url( 'update-core.php' ),
-					'count'  => $updates['themes'],
-					'status' => $updates['themes'] > 0
-						? sprintf(
-							/* translators: %d: Number of theme updates. */
-							_n(
-								'%d update available',
-								'%d updates available',
-								$updates['themes'],
-								'goug-framework'
-							),
-							$updates['themes']
-						)
-						: __( 'Up to date', 'goug-framework' ),
-					'state'  => $updates['themes'] > 0
-						? 'warning'
-						: 'success',
-				),
-			),
-		);
-
-		/*
-		* Translation updates are normally handled automatically and are not
-		* prominent enough to occupy a permanent dashboard card. Display the
-		* card only when translation updates are actually pending.
-		*/
-		if ( $updates['translations'] > 0 ) {
-			$system_updates['items'][] = array(
-				'title'  => __( 'Translations', 'goug-framework' ),
-				'icon'   => 'dashicons-translation',
-				'url'    => admin_url( 'update-core.php' ),
-				'count'  => $updates['translations'],
-				'status' => sprintf(
-					/* translators: %d: Number of translation updates. */
-					_n(
-						'%d update available',
-						'%d updates available',
-						$updates['translations'],
-						'goug-framework'
-					),
-					$updates['translations']
-				),
-				'state'  => 'warning',
-			);
-		}
-
-		/**
-		 * Filter the System Updates section.
-		 *
-		 * @param array $system_updates Prepared System Updates data.
-		 */
-		return apply_filters(
-			'goug_dashboard_system_updates',
-			$system_updates
 		);
 	}
 
