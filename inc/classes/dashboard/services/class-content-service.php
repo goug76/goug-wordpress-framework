@@ -36,6 +36,7 @@ class Content_Service {
 
 		$post_counts    = wp_count_posts( 'post' );
 		$page_counts    = wp_count_posts( 'page' );
+		$media_counts   = wp_count_attachments();
 		$comment_counts = wp_count_comments();
 		$user_counts    = count_users();
 
@@ -56,6 +57,11 @@ class Content_Service {
 					? (int) $page_counts->draft
 					: 0,
 			),
+			'media' => array(
+				'total' => isset( $media_counts->inherit )
+					? (int) $media_counts->inherit
+					: 0,
+			),
 			'comments' => array(
 				'total'    => isset( $comment_counts->total_comments )
 					? (int) $comment_counts->total_comments
@@ -74,6 +80,22 @@ class Content_Service {
 				? (int) $user_counts['total_users']
 				: 0,
 		);
+
+		/*
+		 * Add course counts only when the post type exists.
+		 */
+		if ( post_type_exists( 'courses' ) ) {
+			$course_counts = wp_count_posts( 'courses' );
+
+			$this->content_counts['courses'] = array(
+				'published' => isset( $course_counts->publish )
+					? (int) $course_counts->publish
+					: 0,
+				'drafts'    => isset( $course_counts->draft )
+					? (int) $course_counts->draft
+					: 0,
+			);
+		}
 
 		return $this->content_counts;
 	}

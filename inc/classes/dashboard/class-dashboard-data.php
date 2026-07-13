@@ -18,7 +18,7 @@ use GOUG\Inc\Dashboard\Services\Update_Service;
 use GOUG\Inc\Dashboard\Services\System_Service;
 use GOUG\Inc\Dashboard\Panels\Panel_Site_Status;
 use GOUG\Inc\Dashboard\Panels\Panel_Quick_Actions;
-use GOUG\Inc\Dashboard\Panels\Panel_Site_Overview;
+use GOUG\Inc\Dashboard\Panels\Panel_At_A_Glance;
 use GOUG\Inc\Dashboard\Services\Content_Service;
 
 /**
@@ -94,11 +94,11 @@ class Dashboard_Data {
 	private $content_service;
 
 	/**
-	 * Site Overview panel module.
+	 * At a Glance panel module.
 	 *
-	 * @var Panel_Site_Overview
+	 * @var Panel_At_A_Glance
 	 */
-	private $site_overview_panel;
+	private $at_a_glance_panel;
 
 	/**
 	 * Initialize the dashboard data provider.
@@ -112,7 +112,7 @@ class Dashboard_Data {
 		$this->system_service = new System_Service();
 		$this->content_service = new Content_Service();
 
-		$this->site_overview_panel = new Panel_Site_Overview(
+		$this->at_a_glance_panel = new Panel_At_A_Glance(
 			$this->content_service
 		);
 
@@ -168,7 +168,7 @@ class Dashboard_Data {
 			$this->registry
 		);
 
-		$this->site_overview_panel->register(
+		$this->at_a_glance_panel->register(
 			$this->registry
 		);
 

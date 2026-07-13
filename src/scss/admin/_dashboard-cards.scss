@@ -15,10 +15,6 @@
 	min-width: 0;
 }
 
-.goug-card-grid--metrics {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .goug-card {
 	position: relative;
 	display: flex;
@@ -122,27 +118,4 @@
 	font-size: 11px;
 	font-weight: 700;
 	line-height: 1;
-}
-
-.goug-card--metric {
-	align-items: center;
-	justify-content: center;
-	min-height: 142px;
-	text-align: center;
-
-	.goug-card__icon {
-		font-size: 31px;
-	}
-
-	.goug-card__content {
-		justify-items: center;
-	}
-
-	.goug-card__title {
-		font-size: 17px;
-	}
-
-	.goug-card__description {
-		font-size: 12px;
-	}
 }

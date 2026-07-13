@@ -23,8 +23,7 @@
 		grid-row: 2;
 	}
 
-	.goug-panel--quick-actions,
-	.goug-panel--overview {
+	.goug-panel--quick-actions {
 		grid-column: span 12;
 	}
 }
@@ -91,10 +90,11 @@
 		grid-template-columns: 1fr;
 	}
 
-	.goug-card-grid--metrics {
-		grid-template-columns: 1fr;
+	.goug-panel--quick-actions,
+	.goug-panel--at-a-glance {
+		grid-column: span 12;
 	}
-
+	
 	.goug-card-grid--quick-actions {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
