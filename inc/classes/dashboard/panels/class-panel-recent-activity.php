@@ -51,7 +51,9 @@ class Panel_Recent_Activity implements Dashboard_Panel {
 				'id'         => 'recent-activity',
 				'title'      => __( 'Recent Activity', 'goug-framework' ),
 				'icon'       => 'dashicons-backup',
-				'priority'   => 40,
+				'row'      	 => 3,
+				'width'    	 => 'half',
+				'priority' 	 => 20,
 				'class_name' => 'goug-panel--recent-activity',
 				'body_view'  => 'dashboard/components/recent-activity',
 				'body_data'  => array(

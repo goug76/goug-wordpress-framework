@@ -3,7 +3,6 @@
  */
 
 .goug-panel--quick-draft {
-	grid-column: span 5;
 	height: 100%;
 
 	.goug-panel__body {
@@ -193,5 +192,15 @@
 		height: auto;
 		font-size: 17px;
 		line-height: 1;
+	}
+}
+
+@container dashboard-panel (max-width: 420px) {
+	.goug-quick-draft__actions {
+		display: block;
+	}
+
+	.goug-quick-draft__submit {
+		width: 100%;
 	}
 }

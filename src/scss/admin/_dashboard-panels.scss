@@ -20,10 +20,9 @@
 	border: 1px solid var(--goug-color-border);
 	border-radius: var(--goug-radius-medium);
 	box-shadow: var(--goug-shadow-panel);
-}
 
-.goug-panel--quick-actions {
-	grid-column: span 7;
+	container-type: inline-size;
+	container-name: dashboard-panel;
 }
 
 .goug-panel__header {
@@ -85,6 +84,9 @@
 }
 
 .goug-panel__body {
-	flex: 1;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
 	padding: var(--goug-space-panel);
 }

@@ -1,0 +1,42 @@
+/**
+ * Semantic dashboard panel widths.
+ */
+
+.goug-panel--width-full {
+	grid-column: span 12;
+}
+
+.goug-panel--width-half {
+	grid-column: span 6;
+}
+
+.goug-panel--width-third {
+	grid-column: span 4;
+}
+
+.goug-panel--width-quarter {
+	grid-column: span 3;
+}
+
+/**
+ * Medium admin layouts.
+ *
+ * Thirds become halves where possible. Half-width panels remain halves.
+ */
+@media (max-width: 1280px) {
+	.goug-panel--width-third,
+	.goug-panel--width-quarter {
+		grid-column: span 6;
+	}
+}
+
+/**
+ * Tablet and narrow admin layouts.
+ */
+@media (max-width: 900px) {
+	.goug-panel--width-half,
+	.goug-panel--width-third,
+	.goug-panel--width-quarter {
+		grid-column: span 12;
+	}
+}

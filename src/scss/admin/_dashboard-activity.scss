@@ -2,10 +2,6 @@
  * Dashboard Recent Activity feed.
  */
 
-.goug-panel--recent-activity {
-	grid-column: span 7;
-}
-
 .goug-activity-feed {
 	position: relative;
 	display: grid;
@@ -202,5 +198,26 @@
 		color: var(--goug-color-primary);
 		font-size: 30px;
 		line-height: 1;
+	}
+}
+
+@container dashboard-panel (max-width: 480px) {
+	.goug-activity-item {
+		grid-template-columns: 34px minmax(0, 1fr);
+		gap: 10px;
+	}
+
+	.goug-activity-item__content {
+		display: grid;
+		gap: 5px;
+	}
+
+	.goug-activity-item__title {
+		white-space: normal;
+	}
+
+	.goug-activity-item__time {
+		justify-self: start;
+		white-space: normal;
 	}
 }

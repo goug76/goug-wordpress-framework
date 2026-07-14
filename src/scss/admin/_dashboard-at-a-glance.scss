@@ -2,10 +2,6 @@
  * Dashboard At a Glance panel.
  */
 
-.goug-panel--at-a-glance {
-	grid-column: span 5;
-}
-
 .goug-glance-list {
 	display: grid;
 	width: 100%;
@@ -81,5 +77,20 @@
 .goug-glance-item--warning {
 	.goug-glance-item__secondary {
 		color: #fbbf24;
+	}
+}
+
+@container dashboard-panel (max-width: 380px) {
+	.goug-at-a-glance-item {
+		gap: 8px;
+		padding-block: 9px;
+	}
+
+	.goug-at-a-glance-item__label {
+		font-size: 11px;
+	}
+
+	.goug-at-a-glance-item__value {
+		font-size: 13px;
 	}
 }

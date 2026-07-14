@@ -112,15 +112,34 @@ class Dashboard_Registry {
 			$panels,
 			static function ( $first, $second ) {
 
-				if ( $first['priority'] === $second['priority'] ) {
-					return strcmp(
-						$first['id'],
-						$second['id']
-					);
+				$first_row = isset( $first['row'] )
+					? (int) $first['row']
+					: 100;
+
+				$second_row = isset( $second['row'] )
+					? (int) $second['row']
+					: 100;
+
+				if ( $first_row !== $second_row ) {
+					return $first_row <=> $second_row;
 				}
 
-				return $first['priority']
-					<=> $second['priority'];
+				$first_priority = isset( $first['priority'] )
+					? (int) $first['priority']
+					: 100;
+
+				$second_priority = isset( $second['priority'] )
+					? (int) $second['priority']
+					: 100;
+
+				if ( $first_priority !== $second_priority ) {
+					return $first_priority <=> $second_priority;
+				}
+
+				return strcmp(
+					(string) $first['id'],
+					(string) $second['id']
+				);
 			}
 		);
 
@@ -149,6 +168,8 @@ class Dashboard_Registry {
 			'title'      => '',
 			'icon'       => '',
 			'icon_svg'   => '',
+			'width'      => 'full',
+			'row'        => 100,
 			'priority'   => 100,
 			'class_name' => '',
 			'body_view'  => '',
@@ -169,6 +190,32 @@ class Dashboard_Registry {
 		$panel['icon_svg'] 	 = sanitize_file_name(
 			(string) $panel['icon_svg']
 		);
+		$allowed_widths = array(
+			'full',
+			'half',
+			'third',
+			'quarter',
+		);
+
+		$panel['width'] = strtolower(
+			trim(
+				(string) $panel['width']
+			)
+		);
+
+		if (
+			! in_array(
+				$panel['width'],
+				$allowed_widths,
+				true
+			)
+		) {
+			$panel['width'] = 'full';
+		}
+		$panel['row'] = max(
+			1,
+			(int) $panel['row']
+		);
 		$panel['priority']   = (int) $panel['priority'];
 		$panel['class_name'] = (string) $panel['class_name'];
 		$panel['body_view']  = trim( (string) $panel['body_view'] );
@@ -188,6 +235,16 @@ class Dashboard_Registry {
 		) {
 			return array();
 		}
+
+		$panel['attributes']['data-panel-row'] = (string) $panel['row'];
+
+		$panel['class_name'] = trim(
+			sprintf(
+				'%s goug-panel--width-%s',
+				$panel['class_name'],
+				$panel['width']
+			)
+		);
 
 		return $panel;
 	}

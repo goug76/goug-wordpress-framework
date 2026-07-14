@@ -2,10 +2,6 @@
  * Dashboard Storage Usage panel.
  */
 
-.goug-panel--storage-usage {
-	grid-column: span 6;
-}
-
 .goug-storage {
 	display: grid;
 	grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.4fr);
@@ -189,12 +185,28 @@
 	line-height: 1.4;
 }
 
-@media (max-width: 680px) {
+@container dashboard-panel (max-width: 560px) {
 	.goug-storage {
 		grid-template-columns: 1fr;
+		gap: 20px;
 	}
 
 	.goug-storage-chart {
 		width: min(170px, 100%);
+	}
+
+	.goug-storage__details {
+		width: 100%;
+	}
+}
+
+@container dashboard-panel (max-width: 360px) {
+	.goug-storage-item {
+		grid-template-columns: 10px minmax(0, 1fr);
+	}
+
+	.goug-storage-item__value {
+		grid-column: 2;
+		justify-items: start;
 	}
 }

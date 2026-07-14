@@ -44,7 +44,9 @@ class Panel_Quick_Actions implements Dashboard_Panel {
 				'id'         => 'quick-actions',
 				'title'      => __( 'Quick Actions', 'goug-framework' ),
 				'icon_svg' 	 => 'lightning.svg',
-				'priority'   => 20,
+				'row'      	 => 3,
+				'width'    	 => 'half',
+				'priority' 	 => 10,
 				'class_name' => 'goug-panel--quick-actions',
 				'body_view'  => 'dashboard/components/quick-actions',
 				'body_data'  => array(

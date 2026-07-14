@@ -2,13 +2,14 @@
  * Dashboard Site Health panel.
  */
 
-.goug-panel--site-health {
-	grid-column: span 6;
-}
-
 .goug-health-summary {
-	display: grid;
-	gap: 18px;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 22px;
+	min-width: 0;
+	height: 100%;
 }
 
 .goug-health-summary__overview {
@@ -87,5 +88,25 @@
 			text-decoration: underline;
 			outline: none;
 		}
+	}
+}
+
+@container dashboard-panel (max-width: 520px) {
+	.goug-stat-grid--site-health {
+		grid-template-columns:
+			repeat(
+				2,
+				minmax(0, 1fr)
+			);
+	}
+}
+
+@container dashboard-panel (max-width: 340px) {
+	.goug-stat-grid--site-health {
+		grid-template-columns: 1fr;
+	}
+
+	.goug-health-summary__label {
+		font-size: 16px;
 	}
 }
