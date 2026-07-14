@@ -40,14 +40,14 @@ Review for:
 
 - [ ] Activity Service
 - [ ] Content Service
-- [ ] Database Service
+- [X] Database Service
 - [X] Development Service
 - [ ] Draft Service
 - [ ] Health Service
-- [ ] Site Service
+- [X] Site Service
 - [ ] Storage Service
-- [ ] System Service
-- [ ] Update Service
+- [X] System Service
+- [X] Update Service
 - [ ] User Service
 
 Review for:
@@ -63,11 +63,11 @@ Review for:
 
 ### Panel Modules
 
-- [ ] Site Status
+- [X] Site Status
 - [ ] Site Health
 - [ ] At a Glance
 - [ ] Storage Usage
-- [ ] Quick Actions
+- [X] Quick Actions
 - [ ] Recent Activity
 - [ ] Quick Draft
 - [X] Development
@@ -86,8 +86,8 @@ Review for:
 
 - [ ] Shared panel component
 - [ ] Stat grid
-- [ ] Status cards
-- [ ] Quick Actions
+- [X] Status cards
+- [X] Quick Actions
 - [ ] At a Glance
 - [ ] Recent Activity
 - [ ] Quick Draft
