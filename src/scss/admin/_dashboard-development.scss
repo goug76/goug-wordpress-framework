@@ -129,14 +129,15 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+}
 
-	.is-enabled {
-		color: #36d399;
-	}
+.goug-development-fact--enabled > strong,
+.goug-development-fact--success > strong {
+	color: #36d399;
+}
 
-	.is-disabled {
-		color: var(--goug-color-text-muted);
-	}
+.goug-development-fact--disabled > strong {
+	color: var(--goug-color-text-muted);
 }
 
 .goug-development-actions {

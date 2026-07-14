@@ -2,6 +2,15 @@
 /**
  * Dashboard Development component.
  *
+ * Responsibilities:
+ *
+ * - Render the environment summary.
+ * - Render normalized development facts.
+ * - Render capability-aware development actions.
+ *
+ * The component consumes prepared data only. It does not query
+ * WordPress or calculate development state.
+ *
  * @var array $development Development information.
  *
  * @package GOUG
@@ -18,24 +27,14 @@ if ( empty( $development ) ) {
 	return;
 }
 
-$environment = isset( $development['environment'] )
-	&& is_array( $development['environment'] )
-		? $development['environment']
+$summary = isset( $development['summary'] )
+	&& is_array( $development['summary'] )
+		? $development['summary']
 		: array();
 
-$theme = isset( $development['theme'] )
-	&& is_array( $development['theme'] )
-		? $development['theme']
-		: array();
-
-$runtime = isset( $development['runtime'] )
-	&& is_array( $development['runtime'] )
-		? $development['runtime']
-		: array();
-
-$debug = isset( $development['debug'] )
-	&& is_array( $development['debug'] )
-		? $development['debug']
+$facts = isset( $development['facts'] )
+	&& is_array( $development['facts'] )
+		? $development['facts']
 		: array();
 
 $actions = isset( $development['actions'] )
@@ -43,9 +42,13 @@ $actions = isset( $development['actions'] )
 		? $development['actions']
 		: array();
 
-$environment_state = ! empty( $environment['is_local'] )
-	? 'development'
+$summary_state = isset( $summary['state'] )
+	? sanitize_html_class( $summary['state'] )
 	: 'production';
+
+$summary_icon = isset( $summary['icon'] )
+	? sanitize_html_class( $summary['icon'] )
+	: 'dashicons-admin-site-alt3';
 ?>
 
 <div class="goug-development">
@@ -54,11 +57,13 @@ $environment_state = ! empty( $environment['is_local'] )
 
 		<div
 			class="goug-development-environment goug-development-environment--<?php
-			echo esc_attr( $environment_state );
+			echo esc_attr( $summary_state );
 			?>"
 		>
 			<span
-				class="goug-development-environment__icon dashicons dashicons-admin-site-alt3"
+				class="goug-development-environment__icon dashicons <?php
+				echo esc_attr( $summary_icon );
+				?>"
 				aria-hidden="true"
 			></span>
 
@@ -75,206 +80,80 @@ $environment_state = ! empty( $environment['is_local'] )
 				<strong>
 					<?php
 					echo esc_html(
-						$environment['label'] ?? ''
+						$summary['label'] ?? ''
 					);
 					?>
 				</strong>
 			</div>
 		</div>
 
-		<div class="goug-development-facts">
+		<?php if ( ! empty( $facts ) ) : ?>
 
-			<div class="goug-development-fact">
-				<span>
-					<?php esc_html_e( 'Active Theme', 'goug-framework' ); ?>
-				</span>
+			<div class="goug-development-facts">
 
-				<strong>
-					<?php echo esc_html( $theme['name'] ?? '' ); ?>
-				</strong>
+				<?php foreach ( $facts as $fact ) : ?>
 
-				<small>
 					<?php
-					printf(
-						/* translators: %s: Theme version. */
-						esc_html__( 'Version %s', 'goug-framework' ),
-						esc_html( $theme['version'] ?? '' )
-					);
-					?>
-				</small>
-			</div>
+					if (
+						! is_array( $fact )
+						|| empty( $fact['label'] )
+					) {
+						continue;
+					}
 
-			<div class="goug-development-fact">
-				<span>
-					<?php esc_html_e( 'Theme Type', 'goug-framework' ); ?>
-				</span>
-
-				<strong>
-					<?php
-					echo ! empty( $theme['is_child_theme'] )
-						? esc_html__(
-							'Child Theme',
-							'goug-framework'
+					$fact_state = isset( $fact['state'] )
+						? sanitize_html_class(
+							$fact['state']
 						)
-						: esc_html__(
-							'Parent Theme',
-							'goug-framework'
-						);
+						: 'default';
 					?>
-				</strong>
 
-				<?php if ( ! empty( $theme['parent_name'] ) ) : ?>
-					<small>
+					<div
+						class="goug-development-fact goug-development-fact--<?php
+						echo esc_attr( $fact_state );
+						?>"
+					>
+						<span>
+							<?php
+							echo esc_html(
+								$fact['label']
+							);
+							?>
+						</span>
+
+						<strong>
+							<?php
+							echo esc_html(
+								$fact['value'] ?? ''
+							);
+							?>
+						</strong>
+
 						<?php
-						printf(
-							/* translators: %s: Parent theme name. */
-							esc_html__(
-								'Parent: %s',
-								'goug-framework'
-							),
-							esc_html( $theme['parent_name'] )
-						);
-						?>
-					</small>
-				<?php endif; ?>
+						if (
+							! empty( $fact['description'] )
+						) :
+							?>
+							<small>
+								<?php
+								echo esc_html(
+									$fact['description']
+								);
+								?>
+							</small>
+						<?php endif; ?>
+					</div>
+
+				<?php endforeach; ?>
+
 			</div>
 
-			<div class="goug-development-fact">
-				<span>
-					<?php esc_html_e( 'Framework', 'goug-framework' ); ?>
-				</span>
-
-				<strong>
-					<?php
-					echo esc_html(
-						$runtime['framework_version'] ?? ''
-					);
-					?>
-				</strong>
-
-				<small>
-					<?php
-					printf(
-						/* translators: %s: WordPress version. */
-						esc_html__(
-							'WordPress %s',
-							'goug-framework'
-						),
-						esc_html(
-							$runtime['wordpress_version'] ?? ''
-						)
-					);
-					?>
-				</small>
-			</div>
-
-			<div class="goug-development-fact">
-				<span>
-					<?php esc_html_e( 'PHP', 'goug-framework' ); ?>
-				</span>
-
-				<strong>
-					<?php
-					echo esc_html(
-						$runtime['php_version'] ?? ''
-					);
-					?>
-				</strong>
-
-				<small>
-					<?php
-					echo ! empty( $debug['script_debug'] )
-						? esc_html__(
-							'Unminified assets',
-							'goug-framework'
-						)
-						: esc_html__(
-							'Production assets',
-							'goug-framework'
-						);
-					?>
-				</small>
-			</div>
-
-			<div class="goug-development-fact">
-				<span>
-					<?php esc_html_e( 'Debug Mode', 'goug-framework' ); ?>
-				</span>
-
-				<strong
-					class="<?php
-					echo ! empty( $debug['enabled'] )
-						? 'is-enabled'
-						: 'is-disabled';
-					?>"
-				>
-					<?php
-					echo ! empty( $debug['enabled'] )
-						? esc_html__(
-							'Enabled',
-							'goug-framework'
-						)
-						: esc_html__(
-							'Disabled',
-							'goug-framework'
-						);
-					?>
-				</strong>
-
-				<small>
-					<?php
-					echo ! empty( $debug['log_enabled'] )
-						? esc_html__(
-							'Logging enabled',
-							'goug-framework'
-						)
-						: esc_html__(
-							'Logging disabled',
-							'goug-framework'
-						);
-					?>
-				</small>
-			</div>
-
-			<div class="goug-development-fact">
-				<span>
-					<?php esc_html_e( 'Debug Log', 'goug-framework' ); ?>
-				</span>
-
-				<strong>
-					<?php
-					echo ! empty( $debug['log_exists'] )
-						? esc_html__(
-							'Available',
-							'goug-framework'
-						)
-						: esc_html__(
-							'Not Found',
-							'goug-framework'
-						);
-					?>
-				</strong>
-
-				<small>
-					<?php
-					echo ! empty( $debug['log_readable'] )
-						? esc_html__(
-							'Readable',
-							'goug-framework'
-						)
-						: esc_html__(
-							'Unavailable',
-							'goug-framework'
-						);
-					?>
-				</small>
-			</div>
-
-		</div>
+		<?php endif; ?>
 
 	</div>
 
 	<?php if ( ! empty( $actions ) ) : ?>
+
 		<div class="goug-development-actions">
 
 			<?php foreach ( $actions as $action ) : ?>
@@ -288,10 +167,13 @@ $environment_state = ! empty( $environment['is_local'] )
 					continue;
 				}
 
-				$protocols = ! empty( $action['protocols'] )
-					&& is_array( $action['protocols'] )
-						? $action['protocols']
-						: array( 'http', 'https' );
+				$protocols = ! empty(
+					$action['protocols']
+				) && is_array(
+					$action['protocols']
+				)
+					? $action['protocols']
+					: array( 'http', 'https' );
 
 				$url = esc_url(
 					$action['url'],
@@ -301,6 +183,20 @@ $environment_state = ! empty( $environment['is_local'] )
 				if ( '' === $url ) {
 					continue;
 				}
+
+				$svg_icon_url = ! empty(
+					$action['icon_svg']
+				)
+					? \GOUG\Inc\Helpers\get_icon_url(
+						$action['icon_svg']
+					)
+					: '';
+
+				$dashicon = isset( $action['icon'] )
+					? sanitize_html_class(
+						$action['icon']
+					)
+					: 'dashicons-admin-tools';
 				?>
 
 				<a
@@ -311,16 +207,10 @@ $environment_state = ! empty( $environment['is_local'] )
 						rel="noopener noreferrer"
 					<?php endif; ?>
 				>
-					<?php
-					$svg_icon_url = ! empty( $action['icon_svg'] )
-						? \GOUG\Inc\Helpers\get_icon_url(
-							$action['icon_svg']
-						)
-						: '';
-					?>
-
-					<span class="goug-development-action__icon" aria-hidden="true">
-
+					<span
+						class="goug-development-action__icon"
+						aria-hidden="true"
+					>
 						<?php if ( '' !== $svg_icon_url ) : ?>
 
 							<span
@@ -338,17 +228,11 @@ $environment_state = ! empty( $environment['is_local'] )
 
 							<span
 								class="dashicons <?php
-								echo esc_attr(
-									sanitize_html_class(
-										$action['icon']
-										?? 'dashicons-admin-tools'
-									)
-								);
+								echo esc_attr( $dashicon );
 								?>"
 							></span>
 
 						<?php endif; ?>
-
 					</span>
 
 					<span class="goug-development-action__content">
@@ -360,13 +244,19 @@ $environment_state = ! empty( $environment['is_local'] )
 							?>
 						</strong>
 
-						<small>
-							<?php
-							echo esc_html(
-								$action['description'] ?? ''
-							);
+						<?php
+						if (
+							! empty( $action['description'] )
+						) :
 							?>
-						</small>
+							<small>
+								<?php
+								echo esc_html(
+									$action['description']
+								);
+								?>
+							</small>
+						<?php endif; ?>
 					</span>
 
 					<span
@@ -378,6 +268,7 @@ $environment_state = ! empty( $environment['is_local'] )
 			<?php endforeach; ?>
 
 		</div>
+
 	<?php endif; ?>
 
 </div>

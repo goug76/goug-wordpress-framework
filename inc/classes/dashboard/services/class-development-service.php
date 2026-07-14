@@ -37,10 +37,6 @@ class Development_Service {
 	/**
 	 * Return normalized development information.
 	 *
-	 * The legacy environment, theme, runtime, and debug arrays are
-	 * temporarily preserved while the Development template is migrated
-	 * to the new summary and facts structures.
-	 *
 	 * @return array
 	 */
 	public function get_data() {
@@ -70,16 +66,6 @@ class Development_Service {
 				$environment['type']
 			),
 
-			/*
-			 * Temporary backwards-compatible data.
-			 *
-			 * Remove these after the Development template has been
-			 * converted to use summary and facts.
-			 */
-			'environment' => $environment,
-			'theme'       => $theme,
-			'runtime'     => $runtime,
-			'debug'       => $debug,
 		);
 
 		/**
