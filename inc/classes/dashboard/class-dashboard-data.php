@@ -18,6 +18,7 @@ use GOUG\Inc\Dashboard\Services\Update_Service;
 use GOUG\Inc\Dashboard\Services\System_Service;
 use GOUG\Inc\Dashboard\Panels\Panel_Site_Status;
 use GOUG\Inc\Dashboard\Panels\Panel_Quick_Actions;
+use GOUG\Inc\Dashboard\Services\Quick_Actions_Service;
 use GOUG\Inc\Dashboard\Panels\Panel_At_A_Glance;
 use GOUG\Inc\Dashboard\Services\Content_Service;
 use GOUG\Inc\Dashboard\Panels\Panel_Recent_Activity;
@@ -96,6 +97,13 @@ class Dashboard_Data {
 	 * @var Panel_Quick_Actions
 	 */
 	private $quick_actions_panel;
+
+	/**
+	 * Quick Actions service.
+	 *
+	 * @var Quick_Actions_Service
+	 */
+	private $quick_actions_service;
 
 	/**
 	 * Content data service.
@@ -190,7 +198,8 @@ class Dashboard_Data {
 		$this->system_service = new System_Service();
 		$this->content_service = new Content_Service();
 		$this->database_service = new Database_Service();
-		$this->health_service = new Health_Service();
+		$this->health_service = new Health_Service();		
+		$this->quick_actions_service = new Quick_Actions_Service();
 
 		$this->storage_service = new Storage_Service(
 			$this->database_service
@@ -210,7 +219,9 @@ class Dashboard_Data {
 			$this->database_service
 		);
 
-		$this->quick_actions_panel = new Panel_Quick_Actions();
+		$this->quick_actions_panel = new Panel_Quick_Actions(
+			$this->quick_actions_service
+		);
 
 		$this->activity_service = new Activity_Service( 12 );
 
