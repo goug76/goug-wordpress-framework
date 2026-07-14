@@ -38,7 +38,7 @@ Review for:
 
 ### Services
 
-- [ ] Activity Service
+- [X] Activity Service
 - [ ] Content Service
 - [X] Database Service
 - [X] Development Service
@@ -68,7 +68,7 @@ Review for:
 - [ ] At a Glance
 - [ ] Storage Usage
 - [X] Quick Actions
-- [ ] Recent Activity
+- [X] Recent Activity
 - [ ] Quick Draft
 - [X] Development
 
@@ -89,7 +89,7 @@ Review for:
 - [X] Status cards
 - [X] Quick Actions
 - [ ] At a Glance
-- [ ] Recent Activity
+- [X] Recent Activity
 - [ ] Quick Draft
 - [ ] Site Health
 - [ ] Storage Usage

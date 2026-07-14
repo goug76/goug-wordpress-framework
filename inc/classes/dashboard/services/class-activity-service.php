@@ -10,12 +10,26 @@ namespace GOUG\Inc\Dashboard\Services;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Provides recent native WordPress activity.
+ * Provides normalized recent WordPress activity for the dashboard.
+ *
+ * Responsibilities:
+ *
+ * - Collect recent content, comment, and user activity.
+ * - Normalize different activity sources into one consistent structure.
+ * - Merge and sort activity by timestamp.
+ * - Limit the final activity feed to the configured number of items.
+ * - Provide an extension point for additional activity integrations.
+ *
+ * This service prepares data only. It does not register dashboard
+ * panels or render presentation markup.
  */
 class Activity_Service {
 
 	/**
 	 * Cached activity for the current request.
+	 *
+	 * Prevents activity queries from running more than once during a
+	 * single WordPress request.
 	 *
 	 * @var array|null
 	 */
@@ -24,6 +38,9 @@ class Activity_Service {
 	/**
 	 * Maximum number of final activity items.
 	 *
+	 * Each activity source may return up to this number before all
+	 * sources are merged, sorted, and reduced to the final limit.
+	 *
 	 * @var int
 	 */
 	private $limit;
@@ -31,15 +48,21 @@ class Activity_Service {
 	/**
 	 * Initialize the activity service.
 	 *
-	 * @param int $limit Maximum number of returned items.
+	 * @param int $limit Maximum number of returned activity items.
 	 */
 	public function __construct( $limit = 6 ) {
 
-		$this->limit = max( 1, absint( $limit ) );
+		$this->limit = max(
+			1,
+			absint( $limit )
+		);
 	}
 
 	/**
-	 * Return recent WordPress activity.
+	 * Return recent normalized WordPress activity.
+	 *
+	 * Activity from all supported sources is merged and sorted before
+	 * the final item limit is applied.
 	 *
 	 * @return array
 	 */
@@ -55,23 +78,8 @@ class Activity_Service {
 			$this->get_user_activity()
 		);
 
-		/*
-		 * Sort all activity types together using their Unix timestamp.
-		 */
-		usort(
-			$items,
-			static function ( $first, $second ) {
-
-				$first_time = isset( $first['timestamp'] )
-					? (int) $first['timestamp']
-					: 0;
-
-				$second_time = isset( $second['timestamp'] )
-					? (int) $second['timestamp']
-					: 0;
-
-				return $second_time <=> $first_time;
-			}
+		$items = $this->sort_activity_items(
+			$items
 		);
 
 		$items = array_slice(
@@ -83,7 +91,8 @@ class Activity_Service {
 		/**
 		 * Filter Recent Activity items.
 		 *
-		 * Integrations may add normalized activity entries here.
+		 * Integrations may modify the normalized activity entries
+		 * returned by the default WordPress activity providers.
 		 *
 		 * @param array $items Recent activity items.
 		 */
@@ -100,7 +109,10 @@ class Activity_Service {
 	}
 
 	/**
-	 * Return recent post and page activity.
+	 * Collect recently published, updated, and drafted content.
+	 *
+	 * Posts and pages are converted into normalized activity items so
+	 * they can be merged with comment and user activity.
 	 *
 	 * @return array
 	 */
@@ -108,8 +120,14 @@ class Activity_Service {
 
 		$query = new \WP_Query(
 			array(
-				'post_type'              => array( 'post', 'page' ),
-				'post_status'            => array( 'publish', 'draft' ),
+				'post_type'              => array(
+					'post',
+					'page',
+				),
+				'post_status'            => array(
+					'publish',
+					'draft',
+				),
 				'posts_per_page'         => $this->limit,
 				'orderby'                => 'modified',
 				'order'                  => 'DESC',
@@ -123,10 +141,13 @@ class Activity_Service {
 		$items = array();
 
 		foreach ( $query->posts as $post ) {
-            
+
 			if (
-				! $post instanceof \WP_Post ||
-				! current_user_can( 'edit_post', $post->ID )
+				! $post instanceof \WP_Post
+				|| ! current_user_can(
+					'edit_post',
+					$post->ID
+				)
 			) {
 				continue;
 			}
@@ -143,68 +164,42 @@ class Activity_Service {
 				$post
 			);
 
-			/*
-			 * New posts commonly have matching or nearly matching
-			 * published and modified timestamps.
-			 */
-			$is_newly_published = (
-				'publish' === $post->post_status &&
-				abs(
-					$modified_timestamp - $published_timestamp
-				) <= 60
+			$status = $this->get_content_activity_status(
+				$post,
+				$published_timestamp,
+				$modified_timestamp
 			);
 
-			if ( 'draft' === $post->post_status ) {
-				$type  = 'draft';
-				$state = 'neutral';
-				$icon  = 'dashicons-edit';
-				$text  = __( 'Saved draft', 'goug-framework' );
-			} elseif ( $is_newly_published ) {
-				$type  = 'published';
-				$state = 'success';
-				$icon  = 'dashicons-yes-alt';
-				$text  = __( 'Published', 'goug-framework' );
-			} else {
-				$type  = 'updated';
-				$state = 'info';
-				$icon  = 'dashicons-update';
-				$text  = __( 'Updated', 'goug-framework' );
-			}
+			$post_type_label = $this->get_post_type_label(
+				$post->post_type
+			);
 
-            $post_type_object = get_post_type_object(
-                $post->post_type
-            );
+			$title = $this->get_content_title(
+				$post
+			);
 
-            $post_type_label = (
-                $post_type_object &&
-                ! empty( $post_type_object->labels->singular_name )
-            )
-                ? $post_type_object->labels->singular_name
-                : __( 'Content', 'goug-framework' );
-
-			$title = get_the_title( $post );
-
-			if ( '' === trim( $title ) ) {
-				$title = __( '(no title)', 'goug-framework' );
-			}
-
-			$items[] = array(
-				'id'        => 'content-' . $post->ID,
-				'type'      => $type,
-				'state'     => $state,
-				'icon'      => $icon,
-				'action' => sprintf(
-                    /* translators: 1: Activity action. 2: Content type. */
-                    __( '%1$s %2$s', 'goug-framework' ),
-                    $text,
-                    $post_type_label
-                ),
-				'title'     => $title,
-				'timestamp' => $modified_timestamp,
-				'url'       => get_edit_post_link(
-					$post->ID,
-					'raw'
-				),
+			$items[] = $this->build_activity_item(
+				array(
+					'id'        => 'content-' . $post->ID,
+					'type'      => $status['type'],
+					'state'     => $status['state'],
+					'icon'      => $status['icon'],
+					'action'    => sprintf(
+						/* translators: 1: Activity action. 2: Content type. */
+						__(
+							'%1$s %2$s',
+							'goug-framework'
+						),
+						$status['label'],
+						$post_type_label
+					),
+					'title'     => $title,
+					'timestamp' => $modified_timestamp,
+					'url'       => get_edit_post_link(
+						$post->ID,
+						'raw'
+					),
+				)
 			);
 		}
 
@@ -212,7 +207,10 @@ class Activity_Service {
 	}
 
 	/**
-	 * Return recent comment activity.
+	 * Collect recent comment activity.
+	 *
+	 * Comment activity is available only to users who can moderate
+	 * comments. Pending comments receive a warning state.
 	 *
 	 * @return array
 	 */
@@ -245,37 +243,55 @@ class Activity_Service {
 			);
 
 			if ( '' === trim( $post_title ) ) {
-				$post_title = __( '(no title)', 'goug-framework' );
+				$post_title = __(
+					'(no title)',
+					'goug-framework'
+				);
 			}
 
 			$author = $comment->comment_author
 				? $comment->comment_author
 				: __( 'Anonymous', 'goug-framework' );
 
-			$is_pending = '0' === (string) $comment->comment_approved;
+			$is_pending = '0'
+				=== (string) $comment->comment_approved;
 
-			$items[] = array(
-				'id'        => 'comment-' . $comment->comment_ID,
-				'type'      => 'comment',
-				'state'     => $is_pending ? 'warning' : 'comment',
-				'icon'      => 'dashicons-admin-comments',
-				'action'    => $is_pending
-					? __( 'Pending comment', 'goug-framework' )
-					: __( 'New comment', 'goug-framework' ),
-				'title'     => sprintf(
-					/* translators: 1: Comment author. 2: Post title. */
-					__( '%1$s on “%2$s”', 'goug-framework' ),
-					$author,
-					$post_title
-				),
-				'timestamp' => mysql2date(
-					'U',
-					$comment->comment_date_gmt,
-					false
-				),
-				'url'       => get_edit_comment_link(
-					$comment->comment_ID
-				),
+			$items[] = $this->build_activity_item(
+				array(
+					'id'        => 'comment-'
+						. $comment->comment_ID,
+					'type'      => 'comment',
+					'state'     => $is_pending
+						? 'warning'
+						: 'comment',
+					'icon'      => 'dashicons-admin-comments',
+					'action'    => $is_pending
+						? __(
+							'Pending comment',
+							'goug-framework'
+						)
+						: __(
+							'New comment',
+							'goug-framework'
+						),
+					'title'     => sprintf(
+						/* translators: 1: Comment author. 2: Post title. */
+						__(
+							'%1$s on “%2$s”',
+							'goug-framework'
+						),
+						$author,
+						$post_title
+					),
+					'timestamp' => mysql2date(
+						'U',
+						$comment->comment_date_gmt,
+						false
+					),
+					'url'       => get_edit_comment_link(
+						$comment->comment_ID
+					),
+				)
 			);
 		}
 
@@ -283,7 +299,10 @@ class Activity_Service {
 	}
 
 	/**
-	 * Return recently registered users.
+	 * Collect recently registered WordPress users.
+	 *
+	 * User activity is returned only when the current administrator
+	 * has permission to list users.
 	 *
 	 * @return array
 	 */
@@ -314,21 +333,206 @@ class Activity_Service {
 				continue;
 			}
 
-			$items[] = array(
-				'id'        => 'user-' . $user->ID,
-				'type'      => 'user',
-				'state'     => 'user',
-				'icon'      => 'dashicons-admin-users',
-				'action'    => __( 'User registered', 'goug-framework' ),
-				'title'     => $user->display_name,
-				'timestamp' => mysql2date(
-					'U',
-					$user->user_registered,
-					false
-				),
-				'url'       => get_edit_user_link( $user->ID ),
+			$items[] = $this->build_activity_item(
+				array(
+					'id'        => 'user-' . $user->ID,
+					'type'      => 'user',
+					'state'     => 'user',
+					'icon'      => 'dashicons-admin-users',
+					'action'    => __(
+						'User registered',
+						'goug-framework'
+					),
+					'title'     => $user->display_name,
+					'timestamp' => mysql2date(
+						'U',
+						$user->user_registered,
+						false
+					),
+					'url'       => get_edit_user_link(
+						$user->ID
+					),
+				)
 			);
 		}
+
+		return $items;
+	}
+
+	/**
+	 * Determine the activity state for a post or page.
+	 *
+	 * Newly published content commonly has publication and modification
+	 * timestamps within a few seconds of each other. A sixty-second
+	 * tolerance prevents it from being incorrectly labeled as updated.
+	 *
+	 * @param \WP_Post $post                Content object.
+	 * @param int      $published_timestamp Publication timestamp.
+	 * @param int      $modified_timestamp  Modification timestamp.
+	 *
+	 * @return array
+	 */
+	private function get_content_activity_status(
+		$post,
+		$published_timestamp,
+		$modified_timestamp
+	) {
+
+		$is_newly_published = (
+			'publish' === $post->post_status
+			&& abs(
+				$modified_timestamp
+				- $published_timestamp
+			) <= 60
+		);
+
+		if ( 'draft' === $post->post_status ) {
+			return array(
+				'type'  => 'draft',
+				'state' => 'neutral',
+				'icon'  => 'dashicons-edit',
+				'label' => __(
+					'Saved draft',
+					'goug-framework'
+				),
+			);
+		}
+
+		if ( $is_newly_published ) {
+			return array(
+				'type'  => 'published',
+				'state' => 'success',
+				'icon'  => 'dashicons-yes-alt',
+				'label' => __(
+					'Published',
+					'goug-framework'
+				),
+			);
+		}
+
+		return array(
+			'type'  => 'updated',
+			'state' => 'info',
+			'icon'  => 'dashicons-update',
+			'label' => __(
+				'Updated',
+				'goug-framework'
+			),
+		);
+	}
+
+	/**
+	 * Return a readable singular label for a post type.
+	 *
+	 * @param string $post_type Post type name.
+	 *
+	 * @return string
+	 */
+	private function get_post_type_label( $post_type ) {
+
+		$post_type_object = get_post_type_object(
+			$post_type
+		);
+
+		if (
+			$post_type_object
+			&& ! empty(
+				$post_type_object->labels->singular_name
+			)
+		) {
+			return $post_type_object->labels->singular_name;
+		}
+
+		return __( 'Content', 'goug-framework' );
+	}
+
+	/**
+	 * Return a safe display title for a post or page.
+	 *
+	 * @param \WP_Post $post Content object.
+	 *
+	 * @return string
+	 */
+	private function get_content_title( $post ) {
+
+		$title = get_the_title( $post );
+
+		return '' !== trim( $title )
+			? $title
+			: __( '(no title)', 'goug-framework' );
+	}
+
+	/**
+	 * Build a normalized dashboard activity item.
+	 *
+	 * All activity providers use this structure so their results can be
+	 * merged, sorted, filtered, and rendered consistently.
+	 *
+	 * @param array $activity Activity definition.
+	 *
+	 * @return array
+	 */
+	private function build_activity_item( array $activity ) {
+
+		$item = wp_parse_args(
+			$activity,
+			array(
+				'id'        => '',
+				'type'      => '',
+				'state'     => 'neutral',
+				'icon'      => 'dashicons-marker',
+				'action'    => '',
+				'title'     => '',
+				'timestamp' => 0,
+				'url'       => '',
+			)
+		);
+
+		$item['id']        = sanitize_key( $item['id'] );
+		$item['type']      = sanitize_key( $item['type'] );
+		$item['state']     = sanitize_key( $item['state'] );
+		$item['icon']      = sanitize_html_class(
+			$item['icon']
+		);
+		$item['action']    = (string) $item['action'];
+		$item['title']     = (string) $item['title'];
+		$item['timestamp'] = max(
+			0,
+			(int) $item['timestamp']
+		);
+		$item['url']       = (string) $item['url'];
+
+		return $item;
+	}
+
+	/**
+	 * Sort activity items from newest to oldest.
+	 *
+	 * @param array $items Activity items.
+	 *
+	 * @return array
+	 */
+	private function sort_activity_items( $items ) {
+
+		if ( ! is_array( $items ) ) {
+			return array();
+		}
+
+		usort(
+			$items,
+			static function ( $first, $second ) {
+
+				$first_time = isset( $first['timestamp'] )
+					? (int) $first['timestamp']
+					: 0;
+
+				$second_time = isset( $second['timestamp'] )
+					? (int) $second['timestamp']
+					: 0;
+
+				return $second_time <=> $first_time;
+			}
+		);
 
 		return $items;
 	}
