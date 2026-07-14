@@ -8,8 +8,14 @@
 
 @use "admin/dashboard-panels";
 @use "admin/dashboard-cards";
+@use "admin/dashboard-stats";
 @use "admin/dashboard-quick-actions";
 @use "admin/dashboard-at-a-glance";
+@use "admin/dashboard-activity";
+@use "admin/dashboard-quick-draft";
+@use "admin/dashboard-site-health";
+@use "admin/dashboard-storage";
+@use "admin/dashboard-development";
 @use "admin/dashboard-status";
 @use "admin/dashboard-responsive";
 

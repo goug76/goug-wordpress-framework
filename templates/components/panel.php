@@ -111,13 +111,60 @@ $attribute_string = implode( ' ', $attribute_parts );
 	<?php if ( '' !== $title || '' !== $icon ) : ?>
 		<header class="goug-panel__header">
 
-			<?php if ( '' !== $icon ) : ?>
-				<span
-					class="goug-panel__icon dashicons <?php echo esc_attr(
-						sanitize_html_class( $icon )
-					); ?>"
-					aria-hidden="true"
-				></span>
+			<?php
+			$panel_svg_url = ! empty( $panel['icon_svg'] )
+				? \GOUG\Inc\Helpers\get_icon_url(
+					$panel['icon_svg']
+				)
+				: '';
+			?>
+
+			<?php
+			$icon = isset( $icon )
+				? sanitize_html_class( $icon )
+				: '';
+
+			$icon_svg = isset( $icon_svg )
+				? sanitize_file_name( $icon_svg )
+				: '';
+
+			$panel_svg_url = '' !== $icon_svg
+				? \GOUG\Inc\Helpers\get_icon_url( $icon_svg )
+				: '';
+			?>
+
+			<?php if (
+				'' !== $panel_svg_url ||
+				'' !== $icon
+			) : ?>
+
+				<span class="goug-panel__icon" aria-hidden="true">
+
+					<?php if ( '' !== $panel_svg_url ) : ?>
+
+						<span
+							class="goug-svg-icon"
+							style="<?php
+							echo esc_attr(
+								'--goug-icon-url: url('
+								. esc_url_raw( $panel_svg_url )
+								. ');'
+							);
+							?>"
+						></span>
+
+					<?php else : ?>
+
+						<span
+							class="dashicons <?php
+							echo esc_attr( $icon );
+							?>"
+						></span>
+
+					<?php endif; ?>
+
+				</span>
+
 			<?php endif; ?>
 
 			<?php if ( '' !== $title ) : ?>

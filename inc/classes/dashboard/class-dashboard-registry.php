@@ -32,6 +32,7 @@ class Dashboard_Registry {
      * Optional:
      *
      * - icon
+     * - icon_svg
      * - priority
      * - class_name
      * - body_data
@@ -144,17 +145,18 @@ class Dashboard_Registry {
 	private function normalize_panel( array $panel ) {
 
 		$defaults = array(
-            'id'         => '',
-            'title'      => '',
-            'icon'       => '',
-            'priority'   => 100,
-            'class_name' => '',
-            'body_view'  => '',
-            'body_data'  => array(),
-            'capability' => 'read',
-            'visible'    => true,
-            'attributes' => array(),
-        );
+			'id'         => '',
+			'title'      => '',
+			'icon'       => '',
+			'icon_svg'   => '',
+			'priority'   => 100,
+			'class_name' => '',
+			'body_view'  => '',
+			'body_data'  => array(),
+			'capability' => 'read',
+			'visible'    => true,
+			'attributes' => array(),
+		);
 
 		$panel = wp_parse_args(
 			$panel,
@@ -164,6 +166,9 @@ class Dashboard_Registry {
 		$panel['id']         = sanitize_key( $panel['id'] );
 		$panel['title']      = (string) $panel['title'];
 		$panel['icon']       = sanitize_html_class( $panel['icon'] );
+		$panel['icon_svg'] 	 = sanitize_file_name(
+			(string) $panel['icon_svg']
+		);
 		$panel['priority']   = (int) $panel['priority'];
 		$panel['class_name'] = (string) $panel['class_name'];
 		$panel['body_view']  = trim( (string) $panel['body_view'] );

@@ -55,3 +55,23 @@ function get_brand_icon_url( $size = 96 ) {
 		? $site_icon_url
 		: '';
 }
+
+/**
+ * Return the URL for a bundled framework icon.
+ *
+ * @param string $filename Icon filename.
+ *
+ * @return string
+ */
+function get_icon_url( $filename ) {
+
+	$filename = basename( (string) $filename );
+
+	if ( '' === $filename ) {
+		return '';
+	}
+
+	return get_stylesheet_directory_uri()
+		. '/assets/icons/'
+		. rawurlencode( $filename );
+}

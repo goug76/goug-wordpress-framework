@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 use GOUG\Inc\Traits\Singleton;
 use GOUG\Inc\Dashboard\Dashboard_Data;
 use function GOUG\Inc\Helpers\get_brand_logo_url;
+use GOUG\Inc\Dashboard\Services\Draft_Service;
 use WP_Admin_Bar;
 
 class Dashboard {
@@ -49,6 +50,13 @@ class Dashboard {
 	private $page_hook = '';
 
 	/**
+	 * Quick Draft service.
+	 *
+	 * @var Draft_Service
+	 */
+	private $draft_service;
+
+	/**
 	 * Initialize the dashboard module.
 	 */
 	protected function __construct() {
@@ -60,6 +68,9 @@ class Dashboard {
 		if ( ! defined( 'GOUG_LAB_URL' ) ) {
 			define( 'GOUG_LAB_URL', 'https://gouglabs.com' );
 		}
+
+		$this->draft_service = new Draft_Service();
+		$this->draft_service->register_hooks();
 
 		$this->setup_hooks();
 	}
@@ -201,7 +212,9 @@ class Dashboard {
 			);
 		}
 
-		$dashboard_data = new Dashboard_Data();
+		$dashboard_data = new Dashboard_Data(
+			$this->draft_service
+		);
 		$data           = $dashboard_data->get_data();
 
 		View::render(

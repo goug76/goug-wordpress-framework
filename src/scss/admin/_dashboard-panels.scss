@@ -3,6 +3,9 @@
  */
 
 .goug-panel {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 	width: 100%;
 	min-width: 0;
 	overflow: hidden;
@@ -56,12 +59,20 @@
 }
 
 .goug-panel__icon {
-	width: auto;
-	height: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	width: 18px;
+	height: 18px;
 
 	color: var(--goug-color-primary-bright);
-	font-size: 19px;
-	line-height: 1;
+	flex: 0 0 auto;
+
+	.goug-svg-icon {
+		width: 16px;
+		height: 16px;
+	}
 }
 
 .goug-panel__title {
@@ -74,5 +85,6 @@
 }
 
 .goug-panel__body {
+	flex: 1;
 	padding: var(--goug-space-panel);
 }

@@ -10,6 +10,7 @@ namespace GOUG\Inc\Dashboard\Panels;
 defined( 'ABSPATH' ) || exit;
 
 use GOUG\Inc\Dashboard\Dashboard_Registry;
+use GOUG\Inc\Dashboard\Services\Database_Service;
 use GOUG\Inc\Dashboard\Services\System_Service;
 use GOUG\Inc\Dashboard\Services\Update_Service;
 
@@ -33,6 +34,13 @@ class Panel_Site_Status implements Dashboard_Panel {
 	private $system_service;
 
 	/**
+	 * Database information service.
+	 *
+	 * @var Database_Service
+	 */
+	private $database_service;
+
+	/**
 	 * Initialize the panel.
 	 *
 	 * @param Update_Service $update_service Update data service.
@@ -40,10 +48,12 @@ class Panel_Site_Status implements Dashboard_Panel {
 	 */
 	public function __construct(
 		Update_Service $update_service,
-		System_Service $system_service
+		System_Service $system_service,
+		Database_Service $database_service
 	) {
 		$this->update_service = $update_service;
 		$this->system_service = $system_service;
+		$this->database_service = $database_service;
 	}
 
 	/**
@@ -87,8 +97,9 @@ class Panel_Site_Status implements Dashboard_Panel {
 	 */
 	private function get_data() {
 
-		$updates = $this->update_service->get_data();
-		$system  = $this->system_service->get_data();
+		$updates  = $this->update_service->get_data();
+		$system   = $this->system_service->get_data();
+		$database = $this->database_service->get_data();
 
 		$environment = ucfirst(
 			str_replace(
@@ -176,6 +187,31 @@ class Panel_Site_Status implements Dashboard_Panel {
 						? 'success'
 						: 'warning',
 					'url'   => admin_url( 'site-health.php' ),
+				),
+				array(
+					'label' => __( 'Database', 'goug-framework' ),
+					'value' => ! empty( $database['size'] )
+						? $database['size']
+						: __( 'Unknown', 'goug-framework' ),
+					'meta'  => sprintf(
+						/* translators: 1: Database table count. 2: Database server name and version. */
+						__( '%1$d tables · %2$s', 'goug-framework' ),
+						isset( $database['table_count'] )
+							? (int) $database['table_count']
+							: 0,
+						trim(
+							sprintf(
+								'%1$s %2$s',
+								$database['server'] ?? '',
+								$database['version'] ?? ''
+							)
+						)
+					),
+					'icon'  => 'dashicons-database',
+					'state' => 'info',
+					'url'   => admin_url(
+						'site-health.php?tab=debug'
+					),
 				),
 				array(
 					'label' => __( 'PHP', 'goug-framework' ),

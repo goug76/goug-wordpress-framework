@@ -37,6 +37,7 @@ defined( 'ABSPATH' ) || exit;
                         array(
                             'title'       => $panel['title'] ?? '',
                             'icon'        => $panel['icon'] ?? '',
+                        'icon_svg'        => $panel['icon_svg'],
                             'class_name'  => $panel['class_name'] ?? '',
                             'body_view'   => $panel['body_view'] ?? '',
                             'body_data'   => $panel['body_data'] ?? array(),

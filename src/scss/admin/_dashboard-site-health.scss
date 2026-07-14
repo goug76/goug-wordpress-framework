@@ -1,0 +1,91 @@
+/**
+ * Dashboard Site Health panel.
+ */
+
+.goug-panel--site-health {
+	grid-column: span 6;
+}
+
+.goug-health-summary {
+	display: grid;
+	gap: 18px;
+}
+
+.goug-health-summary__overview {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.goug-health-summary__indicator {
+	flex: 0 0 auto;
+	width: 11px;
+	height: 11px;
+	margin-top: 5px;
+
+	background: var(--goug-color-primary-bright);
+	border-radius: 50%;
+	box-shadow: 0 0 0 5px rgba(35, 219, 229, 0.1);
+}
+
+.goug-health-summary__label {
+	display: block;
+	margin-bottom: 4px;
+
+	color: var(--goug-color-text);
+	font-size: 18px;
+	font-weight: 800;
+	line-height: 1.2;
+}
+
+.goug-health-summary__description {
+	margin: 0;
+
+	color: var(--goug-color-text-muted);
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.goug-health-summary--good {
+	.goug-health-summary__indicator {
+		background: #36d399;
+		box-shadow: 0 0 0 5px rgba(54, 211, 153, 0.1);
+	}
+}
+
+.goug-health-summary--recommended {
+	.goug-health-summary__indicator {
+		background: #fbbf24;
+		box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.1);
+	}
+}
+
+.goug-health-summary--critical {
+	.goug-health-summary__indicator {
+		background: #f87171;
+		box-shadow: 0 0 0 5px rgba(248, 113, 113, 0.1);
+	}
+}
+
+.goug-health-summary__footer {
+	padding-top: 14px;
+
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+	a {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+
+		color: var(--goug-color-primary-bright);
+		font-size: 12px;
+		font-weight: 700;
+		text-decoration: none;
+
+		&:hover,
+		&:focus-visible {
+			text-decoration: underline;
+			outline: none;
+		}
+	}
+}

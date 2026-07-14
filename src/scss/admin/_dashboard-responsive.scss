@@ -26,6 +26,24 @@
 	.goug-panel--quick-actions {
 		grid-column: span 12;
 	}
+
+	.goug-panel--recent-activity {
+		grid-column: span 12;
+	}
+
+	.goug-panel--recent-activity,
+	.goug-panel--quick-draft {
+		grid-column: span 12;
+	}
+
+	.goug-panel--site-health {
+		grid-column: span 12;
+	}
+
+	.goug-panel--site-health,
+	.goug-panel--storage-usage {
+		grid-column: span 12;
+	}
 }
 
 @media screen and (max-width: 782px) {
@@ -124,5 +142,14 @@
 
 	.goug-card-grid--quick-actions {
 		grid-template-columns: 1fr;
+	}
+
+	.goug-activity-item__content {
+		display: grid;
+		gap: 5px;
+	}
+
+	.goug-activity-item__time {
+		white-space: normal;
 	}
 }
