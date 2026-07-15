@@ -34,3 +34,11 @@
  */
 @use "admin/dashboard-responsive";
 
+#footer-left {
+    width: 100%;
+    text-align: center;
+
+    #goug-admin-footer {
+        font-size: 16px;
+    }
+}

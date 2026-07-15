@@ -32,13 +32,13 @@ class Dashboard {
 	/**
 	 * Capability required to access the custom dashboard.
 	 *
-	 * We are keeping this restricted to administrators for now because
-	 * the current dashboard contains links to themes, plugins, users,
-	 * updates, and other administrative screens.
+	 * The dashboard itself is available to authenticated WordPress users.
+	 * Individual panels remain responsible for enforcing their own
+	 * capability requirements through the Dashboard Registry.
 	 *
 	 * @var string
 	 */
-	private const CAPABILITY = 'manage_options';
+	private const CAPABILITY = 'read';
 
 	/**
 	 * Dashboard page hook returned by add_menu_page().
@@ -145,9 +145,9 @@ class Dashboard {
 	/**
 	 * Register the replacement dashboard page.
 	 *
-	 * The default dashboard menu is removed only for users who can
-	 * access the custom dashboard. Other users retain the standard
-	 * WordPress dashboard.
+	 * The custom dashboard is available to authenticated WordPress users.
+	 * Individual panels are filtered according to visibility and the
+	 * current user's capabilities.
 	 *
 	 * @return void
 	 */
@@ -173,8 +173,9 @@ class Dashboard {
 	/**
 	 * Redirect the native WordPress dashboard to the custom dashboard.
 	 *
-	 * Users who cannot access the custom dashboard remain on the
-	 * standard WordPress dashboard.
+	 * Users who can access the WordPress admin area are redirected to the
+	 * GOUG dashboard. The Dashboard Registry determines which panels each
+	 * user is allowed to view.
 	 *
 	 * @return void
 	 */
@@ -198,6 +199,9 @@ class Dashboard {
 
 	/**
 	 * Render the custom dashboard template.
+	 *
+	 * Panel-level permissions are applied by the Dashboard Registry before
+	 * the dashboard template receives its data.
 	 *
 	 * @return void
 	 */

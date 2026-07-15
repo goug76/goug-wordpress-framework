@@ -1,177 +1,392 @@
 # GOUG Framework Architecture
 
-GOUG Framework is a lightweight, modular WordPress framework focused on building high-performance administrative and frontend features using native WordPress APIs.
+![GOUG Framework Architecture](images/architecture-diagram.png)
 
-It is designed to reduce plugin bloat by providing reusable, production-ready components that are fast, maintainable, and easy to extend.
+> **Version:** 0.5.0-alpha  
+> **Last Updated:** July 2026
 
-## Core Principles
+---
 
-1. Performance first
-2. WordPress native
-3. Modular design
-4. Theme agnostic
-5. Secure by default
-6. Predictable structure
-7. Progressive enhancement
-8. No unnecessary dependencies
-9. Documentation matters
-10. Prefer simple code over clever code
+# Overview
 
-## Dashboard Architecture
+GOUG Framework is a modular WordPress development framework designed to help developers build fast, maintainable, and scalable WordPress websites.
 
-The dashboard uses a registry-driven component architecture.
+Rather than replacing WordPress, GOUG Framework extends it by providing a structured architecture, reusable components, modern development workflows, and a cohesive administrative experience.
 
-```text
-Dashboard Controller
-        ↓
-Dashboard Data Coordinator
-        ↓
-Dashboard Panel Modules
-        ↓
-Dashboard Registry
-        ↓
-Dashboard Template
-        ↓
-Panel and View Components
-```
+The framework is built around one simple philosophy:
 
-### Dashboard Controller
+> **Build with clarity first. Abstract only when patterns prove themselves.**
 
-Responsible for:
+Every architectural decision within the framework is made to improve readability, maintainability, and long-term stability while remaining compatible with WordPress core and the broader plugin ecosystem.
 
-- Registering the custom dashboard page
-- Redirecting the native dashboard
-- Checking permissions
-- Rendering the dashboard view
-- Applying global admin branding
-- Dashboard Data Coordinator
+---
 
-Responsible for:
+# Framework Goals
 
-- Coordinating dashboard data services
-- Initializing panel modules
-- Returning prepared dashboard data
+GOUG Framework is designed to provide:
 
-It should not contain presentation markup or grow into a collection of unrelated data calculations.
+- A clean object-oriented architecture
+- A modern developer workflow
+- A modular dashboard framework
+- Reusable UI components
+- Consistent coding standards
+- Extensible APIs
+- Minimal overhead
+- Excellent performance
+- Strong WordPress compatibility
 
-### Dashboard Registry
+The framework should feel familiar to WordPress developers while introducing modern engineering practices where they add real value.
 
-Responsible for:
+---
 
-- Registering panels
-- Removing panels
-- Checking capabilities and visibility
-- Sorting panels by priority
-- Returning the final panel collection
-### Panel Modules
+# Design Principles
 
-Each panel module implements the Dashboard_Panel interface:
+## Clarity Over Cleverness
 
-```public function register( Dashboard_Registry $registry );```
+Readable code is preferred over clever code.
 
-A panel module owns its panel definition and prepares the data required by its view.
+Classes should be easy to understand without requiring knowledge of the entire framework.
 
-### Views
+If future developers need several minutes to understand a class, the design should be reconsidered.
 
-Views display prepared data.
+---
 
-Views may contain:
+## Single Responsibility
 
-- Escaped HTML output
-- Small display conditions
-- Loops over prepared arrays
+Every class should have one clearly defined responsibility.
 
-Views should not run database queries or calculate dashboard data.
+Examples:
 
-## Framework Request Flow
+- Services collect and normalize data.
+- Panels register dashboard metadata.
+- Templates render prepared data.
+- Components render reusable interface elements.
 
-Every request follows the same general pattern.
+Business logic should never be mixed with presentation.
+
+---
+
+## Proven Abstractions
+
+GOUG Framework follows a simple rule:
+
+> **Three uses before abstraction.**
+
+Code is not extracted into reusable helpers simply because it *might* be reused.
+
+Instead, reusable components are created only after patterns naturally emerge through real development.
+
+This keeps the framework lightweight and prevents unnecessary complexity.
+
+---
+
+## WordPress First
+
+GOUG Framework embraces WordPress instead of fighting it.
+
+Whenever possible the framework uses:
+
+- WordPress APIs
+- WordPress hooks
+- WordPress capabilities
+- WordPress coding conventions
+- WordPress security practices
+
+The framework should always feel like an extension of WordPress—not a replacement for it.
+
+---
+
+## Progressive Modernization
+
+Modern development techniques are adopted only when they improve the developer experience.
+
+Examples include:
+
+- Object-oriented PHP
+- SCSS
+- ES Modules
+- Vite
+- Component-based architecture
+
+These technologies should reduce complexity rather than introduce it.
+
+---
+
+# High-Level Architecture
+
+GOUG Framework is organized into several independent layers.
 
 ```text
 WordPress
-        ↓
-Framework Bootstrap
-        ↓
-Feature Registration
-        ↓
-Service Initialization
-        ↓
-Registry
-        ↓
-Panel / Widget
-        ↓
+    │
+    ▼
+Framework Services
+    │
+    ▼
+Dashboard Panels
+    │
+    ▼
+Templates
+    │
+    ▼
+Shared Components
+    │
+    ▼
+Rendered Interface
+```
+
+Each layer has a single responsibility and communicates only with adjacent layers.
+
+---
+
+# Core Framework Layers
+
+## Services
+
+Services collect, calculate, and normalize data.
+
+Responsibilities include:
+
+- Querying WordPress
+- Reading configuration
+- Performing calculations
+- Caching expensive operations
+- Returning normalized data
+
+Services never render HTML.
+
+---
+
+## Panels
+
+Panels describe dashboard widgets.
+
+Panels:
+
+- register themselves
+- declare metadata
+- request data from services
+- provide templates with prepared data
+
+Panels do not perform business logic.
+
+---
+
+## Templates
+
+Templates are responsible for presentation only.
+
+Templates:
+
+- receive prepared data
+- validate expected values
+- render HTML
+- apply accessibility attributes
+
+Templates should avoid querying WordPress directly.
+
+---
+
+## Shared Components
+
+Components provide reusable interface elements shared across multiple templates.
+
+Examples include:
+
+- Dashboard cards
+- Statistic cards
+- Status indicators
+- Panel wrappers
+- SVG icons
+
+Components should remain generic whenever possible.
+
+---
+
+# Dashboard Lifecycle
+
+Every dashboard panel follows the same request lifecycle.
+
+```text
+Dashboard Request
+
+        │
+
+        ▼
+
+Panel Registry
+
+        │
+
+        ▼
+
+Panel
+
+        │
+
+        ▼
+
+Service
+
+        │
+
+        ▼
+
+Normalized Data
+
+        │
+
+        ▼
+
 Template
-        ↓
-HTML Response
+
+        │
+
+        ▼
+
+Shared Components
+
+        │
+
+        ▼
+
+Rendered Dashboard
 ```
 
-This separation keeps business logic, presentation, and registration independent.
+Because every panel follows this lifecycle, new dashboard features remain predictable and easy to extend.
 
-## Project Structure
+---
+
+# Project Structure
 
 ```text
+assets/
+    images/
+    icons/
+
 inc/
-├── classes/
-│   ├── dashboard/
-│   ├── services/
-│   ├── features/
-│   ├── helpers/
-│   └── settings/
-│
-templates/
-│   └── dashboard/
-│
+    classes/
+        dashboard/
+        framework/
+        services/
+
 src/
-├── js/
-│   └── modules/
-│
-└── scss/
+    js/
+    scss/
+
+templates/
+    dashboard/
+    components/
+
+docs/
 ```
 
-## JavaScript Architecture
+Each directory has a clearly defined purpose.
 
-JavaScript follows a modular ES Module architecture.
+Business logic, presentation, assets, and documentation remain separated.
 
-Each feature should exist as its own class.
+---
 
-```text
-Constructor
-        ↓
-Cache DOM Elements
-        ↓
-Register Events
-        ↓
-Event Handlers
-        ↓
-Helper Methods
-```
+# Asset Pipeline
 
-Entry files (`admin_script.js` and `script.js`) should only import and instantiate modules.
+GOUG Framework uses a modern asset pipeline built around Vite.
 
-Business logic belongs inside the module, not in the entry file.
+### Styles
 
-## Responsibilities
+SCSS is organized into layers:
 
-### Services
+- Tokens
+- Layout
+- Shared Components
+- Feature Modules
+- Responsive Rules
 
-Retrieve and normalize data.
+This allows common styles to remain reusable while individual dashboard modules remain isolated.
 
-### Panels
+### JavaScript
 
-Register dashboard panels and prepare view data.
+JavaScript is organized into ES Modules.
 
-### Views
+Each module has one responsibility and communicates through clearly defined interfaces.
 
-Render HTML.
+---
 
-### Registry
+# Extension Philosophy
 
-Manage panel registration, ordering, visibility, and capabilities.
+GOUG Framework is designed to grow without requiring modifications to existing code.
 
-### JavaScript Modules
+New functionality should be added by:
 
-Handle frontend interactions for a single feature.
+- registering new panels
+- creating new services
+- creating reusable components
+- using WordPress hooks and filters
 
-### SCSS
+Core framework files should rarely require modification after release.
 
-Style one feature or component.
+---
+
+# Performance Philosophy
+
+Performance is considered a feature.
+
+The framework favors:
+
+- cached calculations
+- lazy loading
+- reusable components
+- efficient WordPress queries
+- minimal database access
+- minimal asset overhead
+
+Every feature should justify its runtime cost.
+
+---
+
+# Security Philosophy
+
+Security follows WordPress best practices.
+
+The framework consistently applies:
+
+- capability checks
+- escaping
+- sanitization
+- nonce verification
+- prepared data
+- least privilege
+
+Security should never depend on frontend behavior.
+
+---
+
+# Future Direction
+
+GOUG Framework will continue expanding while preserving its architectural principles.
+
+Future areas of development include:
+
+- User-customizable dashboards
+- Drag-and-drop layouts
+- Panel visibility preferences
+- Widget SDK
+- Plugin extension APIs
+- Notification Center
+- Command Palette
+- AI-powered administrative tools
+
+Regardless of future capabilities, the framework will continue prioritizing:
+
+- clarity
+- maintainability
+- performance
+- extensibility
+- WordPress compatibility
+
+---
+
+# Guiding Principle
+
+> **Build systems that future developers enjoy working with.**
+
+Every class, component, and feature should make the framework easier to understand than it was before.

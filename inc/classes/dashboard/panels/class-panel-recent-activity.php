@@ -46,6 +46,10 @@ class Panel_Recent_Activity implements Dashboard_Panel {
 
 		$items = $this->activity_service->get_data();
 
+		if ( empty( $items ) ) {
+			return;
+		}
+
 		$registry->register_panel(
 			array(
 				'id'         => 'recent-activity',

@@ -10,7 +10,8 @@
 
 	max-height: clamp(360px, 48vh, 520px);
 	overflow-y: auto;
-	overscroll-behavior: contain;
+	overscroll-behavior-y: auto;
+	overscroll-behavior: auto;
 	scrollbar-gutter: stable;
 
 	&::before {

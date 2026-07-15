@@ -36,7 +36,11 @@ class Content_Service {
 
 		$post_counts    = wp_count_posts( 'post' );
 		$page_counts    = wp_count_posts( 'page' );
-		$media_counts   = wp_count_attachments();
+		/*
+		 * Attachments normally use the inherit post status.
+		 * wp_count_attachments() groups results by MIME type instead.
+		 */
+		$media_counts 	= wp_count_posts( 'attachment' );
 		$comment_counts = wp_count_comments();
 		$user_counts    = count_users();
 
