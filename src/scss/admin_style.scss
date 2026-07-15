@@ -2,14 +2,25 @@
  * GOUG Framework admin styles.
  */
 
+/**
+ * Foundation
+ */
 @use "admin/dashboard-tokens";
 @use "admin/dashboard-layout";
-@use "admin/dashboard-header";
 @use "admin/dashboard-widths";
 
+/**
+ * Shared Components
+ */
 @use "admin/dashboard-panels";
 @use "admin/dashboard-cards";
 @use "admin/dashboard-stats";
+@use "admin/dashboard-status";
+
+/**
+ * Feature Modules
+ */
+@use "admin/dashboard-header";
 @use "admin/dashboard-quick-actions";
 @use "admin/dashboard-at-a-glance";
 @use "admin/dashboard-activity";
@@ -17,6 +28,9 @@
 @use "admin/dashboard-site-health";
 @use "admin/dashboard-storage";
 @use "admin/dashboard-development";
-@use "admin/dashboard-status";
+
+/**
+ * Responsive
+ */
 @use "admin/dashboard-responsive";
 

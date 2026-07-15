@@ -11,6 +11,17 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Provides cached WordPress storage usage information.
+ *
+ * Responsibilities:
+ *
+ * - Calculate WordPress storage usage.
+ * - Cache expensive filesystem scans.
+ * - Normalize storage metrics for dashboard presentation.
+ * - Calculate storage percentages.
+ * - Detect custom wp-content layouts safely.
+ *
+ * This service performs filesystem inspection only.
+ * It does not render dashboard presentation.
  */
 class Storage_Service {
 
@@ -341,8 +352,8 @@ class Storage_Service {
 	 */
 	private function is_path_within(
 		$path,
-		$parent_path
-	) {
+		$parent_path ) {
+			
 		if ( empty( $path ) || empty( $parent_path ) ) {
 			return false;
 		}

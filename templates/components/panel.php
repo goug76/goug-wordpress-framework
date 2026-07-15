@@ -112,14 +112,6 @@ $attribute_string = implode( ' ', $attribute_parts );
 		<header class="goug-panel__header">
 
 			<?php
-			$panel_svg_url = ! empty( $panel['icon_svg'] )
-				? \GOUG\Inc\Helpers\get_icon_url(
-					$panel['icon_svg']
-				)
-				: '';
-			?>
-
-			<?php
 			$icon = isset( $icon )
 				? sanitize_html_class( $icon )
 				: '';

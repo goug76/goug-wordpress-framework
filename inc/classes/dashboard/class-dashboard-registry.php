@@ -11,6 +11,20 @@ namespace GOUG\Inc\Dashboard;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Dashboard panel registry.
+ *
+ * Responsibilities:
+ *
+ * - Register dashboard panels.
+ * - Normalize panel definitions.
+ * - Validate panel configuration.
+ * - Filter unavailable panels.
+ * - Sort panels by row and priority.
+ *
+ * The registry stores metadata only.
+ * It does not collect dashboard data or render HTML.
+ */
 class Dashboard_Registry {
 
 	/**
@@ -216,7 +230,10 @@ class Dashboard_Registry {
 			1,
 			(int) $panel['row']
 		);
-		$panel['priority']   = (int) $panel['priority'];
+		$panel['priority'] = max(
+			0,
+			(int) $panel['priority']
+		);
 		$panel['class_name'] = (string) $panel['class_name'];
 		$panel['body_view']  = trim( (string) $panel['body_view'] );
 		$panel['body_data']  = is_array( $panel['body_data'] )
