@@ -1,10 +1,14 @@
 # GOUG Framework
 
+<div align="center">
+
 ![Version](https://img.shields.io/badge/version-v0.5.0--alpha-blue)
 ![WordPress](https://img.shields.io/badge/WordPress-6.8+-21759B)
 ![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4)
 ![License](https://img.shields.io/badge/license-GPLv2+-green)
 ![Status](https://img.shields.io/badge/status-Active%20Development-success)
+
+</div>
 
 > **A modern WordPress development framework for building fast, maintainable, and scalable websites.**
 
