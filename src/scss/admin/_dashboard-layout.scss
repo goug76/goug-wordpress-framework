@@ -70,3 +70,51 @@ body.goug-dashboard-page #footer-left,
 body.goug-dashboard-page #footer-upgrade {
 	color: var(--goug-color-text-muted);
 }
+
+.goug-dashboard--density-compact {
+	--goug-space-page: 12px;
+	--goug-space-grid: 10px;
+	--goug-space-panel: 12px;
+
+	.goug-panel__header {
+		padding-block: 12px;
+	}
+
+	.goug-panel__body {
+		padding: 12px;
+	}
+}
+
+.goug-dashboard--density-comfortable {
+	// Uses the normal framework spacing variables.
+}
+
+.goug-dashboard--density-spacious {
+	--goug-space-page: 36px;
+	--goug-space-grid: 28px;
+	--goug-space-panel: 28px;
+}
+
+.goug-dashboard--motion-disabled {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.goug-dashboard {
+		*,
+		*::before,
+		*::after {
+			scroll-behavior: auto !important;
+			transition-duration: 0.01ms !important;
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+		}
+	}
+}

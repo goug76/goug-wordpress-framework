@@ -6,6 +6,7 @@
  *
  * @var string $site_name Site name.
  * @var array  $user      Current-user information.
+ * @var bool   $show_greeting Whether the user greeting is visible.
  *
  * @package GOUG
  */
@@ -39,6 +40,10 @@ $avatar_url = isset( $user['avatar_url'] )
 	: '';
 
 $logo_url = get_brand_icon_url( 96 );
+
+$show_greeting = isset( $show_greeting )
+	? (bool) $show_greeting
+	: true;
 ?>
 
 <div class="goug-dashboard-topbar">
@@ -112,24 +117,26 @@ $logo_url = get_brand_icon_url( 96 );
 
 	<div class="goug-dashboard-user">
 
-		<div class="goug-dashboard-user__details">
-			<strong class="goug-dashboard-user__greeting">
-				<?php
-				printf(
-					/* translators: 1: Greeting. 2: User display name. */
-					esc_html__( '%1$s, %2$s', 'goug-framework' ),
-					esc_html( $greeting ),
-					esc_html( $display_name )
-				);
-				?>
-			</strong>
+		<?php if ( $show_greeting ) : ?>
+			<div class="goug-dashboard-user__details">
+				<strong class="goug-dashboard-user__greeting">
+					<?php
+					printf(
+						/* translators: 1: Greeting. 2: User display name. */
+						esc_html__( '%1$s, %2$s', 'goug-framework' ),
+						esc_html( $greeting ),
+						esc_html( $display_name )
+					);
+					?>
+				</strong>
 
-			<?php if ( '' !== $current_date ) : ?>
-				<span class="goug-dashboard-user__date">
-					<?php echo esc_html( $current_date ); ?>
-				</span>
-			<?php endif; ?>
-		</div>
+				<?php if ( '' !== $current_date ) : ?>
+					<span class="goug-dashboard-user__date">
+						<?php echo esc_html( $current_date ); ?>
+					</span>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
 
 		<?php if ( '' !== $avatar_url ) : ?>
 			<img
