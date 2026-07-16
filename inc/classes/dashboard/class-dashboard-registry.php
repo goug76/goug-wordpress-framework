@@ -394,6 +394,7 @@ class Dashboard_Registry {
 			'body_view'  => '',
 			'body_data'  => array(),
 			'capability' => 'read',
+			'profiles'   => array(),
 			'visible'    => true,
 			'attributes' => array(),
 		);
@@ -430,6 +431,16 @@ class Dashboard_Registry {
             ? $panel['attributes']
             : array();
 		$panel['capability'] = (string) $panel['capability'];
+		$panel['profiles'] = is_array( $panel['profiles'] )
+			? array_values(
+				array_filter(
+					array_map(
+						'sanitize_key',
+						$panel['profiles']
+					)
+				)
+			)
+			: array();
 		$panel['visible']    = (bool) $panel['visible'];
 
 		if (
@@ -480,6 +491,11 @@ class Dashboard_Registry {
 	/**
 	 * Determine whether a panel should be returned.
 	 *
+	 * Panels must be visible, available to the current user's capability,
+	 * and compatible with the active dashboard layout profile.
+	 *
+	 * An empty profiles array makes the panel available to every profile.
+	 *
 	 * @param array $panel Panel definition.
 	 *
 	 * @return bool
@@ -497,7 +513,27 @@ class Dashboard_Registry {
 			? $panel['capability']
 			: 'read';
 
-		return current_user_can( $capability );
+		if ( ! current_user_can( $capability ) ) {
+			return false;
+		}
+
+		$profiles = isset( $panel['profiles'] )
+			&& is_array( $panel['profiles'] )
+				? $panel['profiles']
+				: array();
+
+		if (
+			! empty( $profiles ) &&
+			! in_array(
+				$this->get_layout_profile(),
+				$profiles,
+				true
+			)
+		) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
