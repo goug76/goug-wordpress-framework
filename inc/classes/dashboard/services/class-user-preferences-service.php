@@ -9,99 +9,117 @@ namespace GOUG\Inc\Dashboard\Services;
 
 defined( 'ABSPATH' ) || exit;
 
-use GOUG\Inc\Settings\Settings_Manager;
+use GOUG\Inc\Settings\Services\User_Settings_Service;
 
 /**
- * Stores and retrieves per-user dashboard preferences.
+ * Provides a dashboard-specific facade over framework user settings.
  *
- * Responsibilities:
- *
- * - Define dashboard preference defaults.
- * - Retrieve saved user preferences.
- * - Sanitize preference values.
- * - Merge saved values with framework defaults.
- * - Update and reset user preferences.
- *
- * Preferences are stored using native WordPress user metadata.
+ * Persistence, defaults, permissions, and sanitization are handled by
+ * User_Settings_Service and the Settings Registry.
  */
 class User_Preferences_Service {
 
 	/**
-	 * User meta key used to store dashboard preferences.
+	 * Generic framework user settings service.
+	 *
+	 * @var User_Settings_Service
+	 */
+	private $user_settings_service;
+
+	/**
+	 * Legacy dashboard preference meta key.
 	 *
 	 * @var string
 	 */
-	private const META_KEY = 'goug_dashboard_preferences';
+	private const LEGACY_META_KEY = 'goug_dashboard_preferences';
 
 	/**
-	 * Cached preferences for the current request.
+	 * Framework user settings meta key.
 	 *
-	 * Preferences are cached by user ID.
+	 * Used only to determine whether legacy preferences should migrate.
 	 *
-	 * @var array
+	 * @var string
 	 */
-	private $preferences = array();
+	private const USER_SETTINGS_META_KEY = 'goug_user_settings';
 
 	/**
-	 * Framework settings manager.
+	 * Initialize the dashboard preference facade.
 	 *
-	 * @var Settings_Manager
-	 */
-	private $settings_manager;
-
-	/**
-	 * Initialize the user preference service.
-	 *
-	 * @param Settings_Manager $settings_manager Framework settings manager.
+	 * @param User_Settings_Service $user_settings_service
+	 *        Generic framework user settings service.
 	 */
 	public function __construct(
-		Settings_Manager $settings_manager
-	) {
+		User_Settings_Service $user_settings_service ) {
 
-		$this->settings_manager = $settings_manager;
+		$this->user_settings_service = $user_settings_service;
 	}
 
 	/**
-	 * Return the default dashboard preferences.
+	 * Migrate legacy dashboard preferences to framework user settings.
 	 *
-	 * Dashboard defaults are defined by the framework Settings Registry.
-	 * Namespaced setting identifiers are converted to the short keys used
-	 * by the existing user-meta storage structure.
+	 * Migration runs only when legacy data exists and the new dashboard
+	 * settings have not already been customized.
 	 *
-	 * @return array
+	 * @param int $user_id Optional user ID. Defaults to current user.
+	 *
+	 * @return bool
 	 */
-	public function get_defaults() {
+	public function migrate_legacy_preferences(
+		$user_id = 0 ) {
 
-		$registered_defaults = $this->settings_manager->get_defaults(
-			'user'
+		$user_id = absint( $user_id );
+
+		if ( 0 === $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		if ( 0 === $user_id ) {
+			return false;
+		}
+
+		$legacy = get_user_meta(
+			$user_id,
+			self::LEGACY_META_KEY,
+			true
 		);
 
-		$defaults = $this->extract_dashboard_defaults(
-			$registered_defaults
+		if ( ! is_array( $legacy ) || empty( $legacy ) ) {
+			return true;
+		}
+
+		$new_settings = get_user_meta(
+			$user_id,
+			self::USER_SETTINGS_META_KEY,
+			true
 		);
 
-		/**
-		 * Filter default dashboard preferences.
-		 *
-		 * This existing filter remains available for backward compatibility.
-		 *
-		 * @param array $defaults Default dashboard preferences.
+		/*
+		 * Do not overwrite settings already written to the new store.
 		 */
-		$defaults = apply_filters(
-			'goug_dashboard_preference_defaults',
-			$defaults
+		if ( is_array( $new_settings ) && ! empty( $new_settings ) ) {
+			return true;
+		}
+
+		$result = $this->update_preferences(
+			$legacy,
+			$user_id
 		);
 
-		return is_array( $defaults )
-			? $defaults
-			: array();
+		if ( ! $result ) {
+			return false;
+		}
+
+		delete_user_meta(
+			$user_id,
+			self::LEGACY_META_KEY
+		);
+
+		return true;
 	}
 
+
 	/**
-	 * Return preferences for a user.
-	 *
-	 * Saved preferences are merged with the current framework defaults
-	 * so newly introduced settings remain available automatically.
+	 * Return dashboard preferences for a user.
 	 *
 	 * @param int $user_id Optional user ID. Defaults to current user.
 	 *
@@ -109,42 +127,13 @@ class User_Preferences_Service {
 	 */
 	public function get_preferences( $user_id = 0 ) {
 
-		$user_id = $this->normalize_user_id(
+		return $this->get_dashboard_settings(
 			$user_id
 		);
-
-		if ( 0 === $user_id ) {
-			return $this->get_defaults();
-		}
-
-		if ( isset( $this->preferences[ $user_id ] ) ) {
-			return $this->preferences[ $user_id ];
-		}
-
-		$saved_preferences = get_user_meta(
-			$user_id,
-			self::META_KEY,
-			true
-		);
-
-		$saved_preferences = is_array( $saved_preferences )
-			? $saved_preferences
-			: array();
-
-		$preferences = wp_parse_args(
-			$saved_preferences,
-			$this->get_defaults()
-		);
-
-		$this->preferences[ $user_id ] = $this->sanitize_preferences(
-			$preferences
-		);
-
-		return $this->preferences[ $user_id ];
 	}
 
 	/**
-	 * Return one preference value.
+	 * Return one dashboard preference.
 	 *
 	 * @param string $key     Preference key.
 	 * @param int    $user_id Optional user ID. Defaults to current user.
@@ -155,81 +144,18 @@ class User_Preferences_Service {
 		$key,
 		$user_id = 0 ) {
 
-		$key         = sanitize_key( $key );
-		$preferences = $this->get_preferences(
-			$user_id
+		$setting_id = $this->get_setting_id(
+			$key
 		);
 
-		return array_key_exists( $key, $preferences )
-			? $preferences[ $key ]
-			: null;
-	}
-
-	/**
-	 * Update dashboard preferences for a user.
-	 *
-	 * Only recognized preference keys are stored.
-	 *
-	 * @param array $preferences Preferences to update.
-	 * @param int   $user_id     Optional user ID. Defaults to current user.
-	 *
-	 * @return bool
-	 */
-	public function update_preferences(
-		array $preferences,
-		$user_id = 0 ) {
-
-		$user_id = $this->normalize_user_id(
-			$user_id
-		);
-
-		if ( 0 === $user_id ) {
-			return false;
+		if ( '' === $setting_id ) {
+			return null;
 		}
 
-		if ( ! $this->can_manage_preferences( $user_id ) ) {
-			return false;
-		}
-
-		$current = $this->get_preferences(
+		return $this->user_settings_service->get(
+			$setting_id,
 			$user_id
 		);
-
-		$updated = array_merge(
-			$current,
-			$preferences
-		);
-
-		$updated = $this->sanitize_preferences(
-			$updated
-		);
-
-		$result = update_user_meta(
-			$user_id,
-			self::META_KEY,
-			$updated
-		);
-
-		/*
-		 * update_user_meta() may return false when the stored value is
-		 * already identical. The operation is still considered valid.
-		 */
-		if ( false === $result ) {
-
-			$stored = get_user_meta(
-				$user_id,
-				self::META_KEY,
-				true
-			);
-
-			if ( $stored !== $updated ) {
-				return false;
-			}
-		}
-
-		$this->preferences[ $user_id ] = $updated;
-
-		return true;
 	}
 
 	/**
@@ -246,22 +172,60 @@ class User_Preferences_Service {
 		$value,
 		$user_id = 0 ) {
 
-		$key = sanitize_key( $key );
+		$setting_id = $this->get_setting_id(
+			$key
+		);
 
-		if ( '' === $key ) {
+		if ( '' === $setting_id ) {
 			return false;
 		}
 
-		return $this->update_preferences(
-			array(
-				$key => $value,
-			),
+		return $this->user_settings_service->set(
+			$setting_id,
+			$value,
 			$user_id
 		);
 	}
 
 	/**
-	 * Reset dashboard preferences for a user.
+	 * Update several dashboard preferences.
+	 *
+	 * @param array $preferences Preferences keyed by short dashboard names.
+	 * @param int   $user_id     Optional user ID. Defaults to current user.
+	 *
+	 * @return bool
+	 */
+	public function update_preferences(
+		array $preferences,
+		$user_id = 0 ) {
+
+		$settings = array();
+
+		foreach ( $preferences as $key => $value ) {
+
+			$setting_id = $this->get_setting_id(
+				$key
+			);
+
+			if ( '' === $setting_id ) {
+				continue;
+			}
+
+			$settings[ $setting_id ] = $value;
+		}
+
+		if ( empty( $settings ) ) {
+			return false;
+		}
+
+		return $this->user_settings_service->set_many(
+			$settings,
+			$user_id
+		);
+	}
+
+	/**
+	 * Reset all dashboard preferences for a user.
 	 *
 	 * @param int $user_id Optional user ID. Defaults to current user.
 	 *
@@ -269,149 +233,128 @@ class User_Preferences_Service {
 	 */
 	public function reset_preferences( $user_id = 0 ) {
 
-		$user_id = $this->normalize_user_id(
+		return $this->user_settings_service->reset_section(
+			'dashboard',
+			$user_id
+		);
+	}
+
+	/**
+	 * Hide a dashboard panel for a user.
+	 *
+	 * @param string $panel_id Panel identifier.
+	 * @param int    $user_id  Optional user ID.
+	 *
+	 * @return bool
+	 */
+	public function hide_panel(
+		$panel_id,
+		$user_id = 0 ) {
+
+		$panel_id = sanitize_key(
+			$panel_id
+		);
+
+		if ( '' === $panel_id ) {
+			return false;
+		}
+
+		$hidden_panels = $this->get_preference(
+			'hidden_panels',
 			$user_id
 		);
 
-		if ( 0 === $user_id ) {
-			return false;
+		$hidden_panels = is_array( $hidden_panels )
+			? $hidden_panels
+			: array();
+
+		if ( in_array( $panel_id, $hidden_panels, true ) ) {
+			return true;
 		}
 
-		if ( ! $this->can_manage_preferences( $user_id ) ) {
-			return false;
-		}
+		$hidden_panels[] = $panel_id;
 
-		delete_user_meta(
-			$user_id,
-			self::META_KEY
+		return $this->update_preference(
+			'hidden_panels',
+			$hidden_panels,
+			$user_id
 		);
-
-		unset(
-			$this->preferences[ $user_id ]
-		);
-
-		return true;
 	}
 
-    /**
-     * Hide a dashboard panel for a user.
-     *
-     * @param string $panel_id Panel identifier.
-     * @param int    $user_id  Optional user ID. Defaults to current user.
-     *
-     * @return bool
-     */
-    public function hide_panel(
-        $panel_id,
-        $user_id = 0 ) {
+	/**
+	 * Show a previously hidden dashboard panel.
+	 *
+	 * @param string $panel_id Panel identifier.
+	 * @param int    $user_id  Optional user ID.
+	 *
+	 * @return bool
+	 */
+	public function show_panel(
+		$panel_id,
+		$user_id = 0 ) {
 
-        $panel_id = sanitize_key(
-            $panel_id
-        );
+		$panel_id = sanitize_key(
+			$panel_id
+		);
 
-        if ( '' === $panel_id ) {
-            return false;
-        }
+		if ( '' === $panel_id ) {
+			return false;
+		}
 
-        $hidden_panels = $this->get_preference(
-            'hidden_panels',
-            $user_id
-        );
+		$hidden_panels = $this->get_preference(
+			'hidden_panels',
+			$user_id
+		);
 
-        $hidden_panels = is_array( $hidden_panels )
-            ? $hidden_panels
-            : array();
+		$hidden_panels = is_array( $hidden_panels )
+			? $hidden_panels
+			: array();
 
-        if ( in_array( $panel_id, $hidden_panels, true ) ) {
-            return true;
-        }
+		$hidden_panels = array_values(
+			array_diff(
+				$hidden_panels,
+				array( $panel_id )
+			)
+		);
 
-        $hidden_panels[] = $panel_id;
+		return $this->update_preference(
+			'hidden_panels',
+			$hidden_panels,
+			$user_id
+		);
+	}
 
-        return $this->update_preference(
-            'hidden_panels',
-            $hidden_panels,
-            $user_id
-        );
-    }
+	/**
+	 * Determine whether a panel is hidden.
+	 *
+	 * @param string $panel_id Panel identifier.
+	 * @param int    $user_id  Optional user ID.
+	 *
+	 * @return bool
+	 */
+	public function is_panel_hidden(
+		$panel_id,
+		$user_id = 0 ) {
 
-    /**
-     * Show a previously hidden dashboard panel.
-     *
-     * @param string $panel_id Panel identifier.
-     * @param int    $user_id  Optional user ID. Defaults to current user.
-     *
-     * @return bool
-     */
-    public function show_panel(
-        $panel_id,
-        $user_id = 0 ) {
+		$panel_id = sanitize_key(
+			$panel_id
+		);
 
-        $panel_id = sanitize_key(
-            $panel_id
-        );
+		$hidden_panels = $this->get_preference(
+			'hidden_panels',
+			$user_id
+		);
 
-        if ( '' === $panel_id ) {
-            return false;
-        }
+		return '' !== $panel_id
+			&& is_array( $hidden_panels )
+			&& in_array(
+				$panel_id,
+				$hidden_panels,
+				true
+			);
+	}
 
-        $hidden_panels = $this->get_preference(
-            'hidden_panels',
-            $user_id
-        );
-
-        if ( ! is_array( $hidden_panels ) ) {
-            return true;
-        }
-
-        $hidden_panels = array_values(
-            array_diff(
-                $hidden_panels,
-                array( $panel_id )
-            )
-        );
-
-        return $this->update_preference(
-            'hidden_panels',
-            $hidden_panels,
-            $user_id
-        );
-    }
-
-    /**
-     * Determine whether a panel is hidden for a user.
-     *
-     * @param string $panel_id Panel identifier.
-     * @param int    $user_id  Optional user ID. Defaults to current user.
-     *
-     * @return bool
-     */
-    public function is_panel_hidden(
-        $panel_id,
-        $user_id = 0 ) {
-
-        $panel_id = sanitize_key(
-            $panel_id
-        );
-
-        if ( '' === $panel_id ) {
-            return false;
-        }
-
-        $hidden_panels = $this->get_preference(
-            'hidden_panels',
-            $user_id
-        );
-
-        return is_array( $hidden_panels )
-            && in_array(
-                $panel_id,
-                $hidden_panels,
-                true
-            );
-    }
-
-    /**
+	/**
      * Collapse a dashboard panel for a user.
      *
      * @param string $panel_id Panel identifier.
@@ -419,41 +362,41 @@ class User_Preferences_Service {
      *
      * @return bool
      */
-    public function collapse_panel(
-        $panel_id,
-        $user_id = 0 ) {
+	public function collapse_panel(
+		$panel_id,
+		$user_id = 0 ) {
 
-        $panel_id = sanitize_key(
-            $panel_id
-        );
+		$panel_id = sanitize_key(
+			$panel_id
+		);
 
-        if ( '' === $panel_id ) {
-            return false;
-        }
+		if ( '' === $panel_id ) {
+			return false;
+		}
 
-        $collapsed_panels = $this->get_preference(
-            'collapsed_panels',
-            $user_id
-        );
+		$collapsed_panels = $this->get_preference(
+			'collapsed_panels',
+			$user_id
+		);
 
-        $collapsed_panels = is_array( $collapsed_panels )
-            ? $collapsed_panels
-            : array();
+		$collapsed_panels = is_array( $collapsed_panels )
+			? $collapsed_panels
+			: array();
 
-        if ( in_array( $panel_id, $collapsed_panels, true ) ) {
-            return true;
-        }
+		if ( in_array( $panel_id, $collapsed_panels, true ) ) {
+			return true;
+		}
 
-        $collapsed_panels[] = $panel_id;
+		$collapsed_panels[] = $panel_id;
 
-        return $this->update_preference(
-            'collapsed_panels',
-            $collapsed_panels,
-            $user_id
-        );
-    }
+		return $this->update_preference(
+			'collapsed_panels',
+			$collapsed_panels,
+			$user_id
+		);
+	}
 
-    /**
+	/**
      * Expand a previously collapsed dashboard panel.
      *
      * @param string $panel_id Panel identifier.
@@ -461,42 +404,42 @@ class User_Preferences_Service {
      *
      * @return bool
      */
-    public function expand_panel(
-        $panel_id,
-        $user_id = 0 ) {
+	public function expand_panel(
+		$panel_id,
+		$user_id = 0 ) {
 
-        $panel_id = sanitize_key(
-            $panel_id
-        );
+		$panel_id = sanitize_key(
+			$panel_id
+		);
 
-        if ( '' === $panel_id ) {
-            return false;
-        }
+		if ( '' === $panel_id ) {
+			return false;
+		}
 
-        $collapsed_panels = $this->get_preference(
-            'collapsed_panels',
-            $user_id
-        );
+		$collapsed_panels = $this->get_preference(
+			'collapsed_panels',
+			$user_id
+		);
 
-        if ( ! is_array( $collapsed_panels ) ) {
-            return true;
-        }
+		$collapsed_panels = is_array( $collapsed_panels )
+			? $collapsed_panels
+			: array();
 
-        $collapsed_panels = array_values(
-            array_diff(
-                $collapsed_panels,
-                array( $panel_id )
-            )
-        );
+		$collapsed_panels = array_values(
+			array_diff(
+				$collapsed_panels,
+				array( $panel_id )
+			)
+		);
 
-        return $this->update_preference(
-            'collapsed_panels',
-            $collapsed_panels,
-            $user_id
-        );
-    }
+		return $this->update_preference(
+			'collapsed_panels',
+			$collapsed_panels,
+			$user_id
+		);
+	}
 
-    /**
+	/**
      * Determine whether a panel is collapsed for a user.
      *
      * @param string $panel_id Panel identifier.
@@ -504,11 +447,11 @@ class User_Preferences_Service {
      *
      * @return bool
      */
-    public function is_panel_collapsed(
-        $panel_id,
-        $user_id = 0 ) {
+	public function is_panel_collapsed(
+		$panel_id,
+		$user_id = 0 ) {
 
-        $panel_id = sanitize_key(
+		$panel_id = sanitize_key(
             $panel_id
         );
 
@@ -516,7 +459,7 @@ class User_Preferences_Service {
             return false;
         }
 
-        $collapsed_panels = $this->get_preference(
+		$collapsed_panels = $this->get_preference(
             'collapsed_panels',
             $user_id
         );
@@ -529,7 +472,7 @@ class User_Preferences_Service {
             );
     }
 
-    /**
+	/**
      * Set the dashboard density for a user.
      *
      * @param string $density Density identifier.
@@ -537,18 +480,18 @@ class User_Preferences_Service {
      *
      * @return bool
      */
-    public function set_density(
-        $density,
-        $user_id = 0 ) {
+	public function set_density(
+		$density,
+		$user_id = 0 ) {
 
-        return $this->update_preference(
-            'density',
-            $density,
-            $user_id
-        );
-    }
+		return $this->update_preference(
+			'density',
+			$density,
+			$user_id
+		);
+	}
 
-    /**
+	/**
      * Set whether the dashboard greeting is visible.
      *
      * @param bool $visible Whether the greeting should be visible.
@@ -556,18 +499,18 @@ class User_Preferences_Service {
      *
      * @return bool
      */
-    public function set_greeting_visibility(
-        $visible,
-        $user_id = 0 ) {
+	public function set_greeting_visibility(
+		$visible,
+		$user_id = 0 ) {
 
-        return $this->update_preference(
-            'show_greeting',
-            (bool) $visible,
-            $user_id
-        );
-    }
+		return $this->update_preference(
+			'show_greeting',
+			(bool) $visible,
+			$user_id
+		);
+	}
 
-    /**
+	/**
      * Set whether dashboard motion effects are enabled.
      *
      * @param bool $enabled Whether motion effects should be enabled.
@@ -575,72 +518,55 @@ class User_Preferences_Service {
      *
      * @return bool
      */
-    public function set_motion_enabled(
-        $enabled,
-        $user_id = 0 ) {
+	public function set_motion_enabled(
+		$enabled,
+		$user_id = 0 ) {
 
-        return $this->update_preference(
-            'enable_motion',
-            (bool) $enabled,
-            $user_id
-        );
-    }
+		return $this->update_preference(
+			'enable_motion',
+			(bool) $enabled,
+			$user_id
+		);
+	}
 
 	/**
-	 * Convert registered dashboard defaults to stored preference keys.
+	 * Return dashboard-scoped settings using short preference keys.
 	 *
-	 * The Settings Registry uses namespaced identifiers such as
-	 * `dashboard.density`, while the existing user-meta record stores
-	 * the shorter `density` key.
-	 *
-	 * Settings outside the dashboard namespace are ignored.
-	 *
-	 * @param array $registered_defaults Registered setting defaults.
+	 * @param int $user_id Optional user ID. Defaults to current user.
 	 *
 	 * @return array
 	 */
-	private function extract_dashboard_defaults(
-		array $registered_defaults ) {
+	private function get_dashboard_settings( $user_id = 0 ) {
 
-		$defaults = array();
-		$prefix   = 'dashboard.';
+		$settings    = $this->user_settings_service->get_all(
+			$user_id
+		);
+		$preferences = array();
 
-		foreach ( $registered_defaults as $setting_id => $default_value ) {
+		foreach ( $settings as $setting_id => $value ) {
 
-			$setting_id = (string) $setting_id;
-
-			if ( 0 !== strpos( $setting_id, $prefix ) ) {
-				continue;
-			}
-
-			$preference_key = substr(
-				$setting_id,
-				strlen( $prefix )
-			);
-
-			$preference_key = sanitize_key(
-				$preference_key
+			$preference_key = $this->get_preference_key(
+				$setting_id
 			);
 
 			if ( '' === $preference_key ) {
 				continue;
 			}
 
-			$defaults[ $preference_key ] = $default_value;
+			$preferences[ $preference_key ] = $value;
 		}
 
-		return $defaults;
+		return $preferences;
 	}
 
 	/**
-	 * Return the registered setting ID for a dashboard preference.
+	 * Return the namespaced setting ID for a dashboard preference.
 	 *
-	 * @param string $preference_key Stored preference key.
+	 * @param string $preference_key Dashboard preference key.
 	 *
 	 * @return string
 	 */
-	private function get_setting_id(
-		$preference_key ) {
+	private function get_setting_id( $preference_key ) {
 
 		$preference_key = sanitize_key(
 			$preference_key
@@ -652,54 +578,31 @@ class User_Preferences_Service {
 	}
 
 	/**
-	 * Sanitize a complete dashboard preference collection.
+	 * Remove the dashboard namespace from a setting identifier.
 	 *
-	 * Registered dashboard setting definitions are the source of truth for
-	 * defaults, field types, valid choices, and custom sanitization.
+	 * @param string $setting_id Namespaced setting identifier.
 	 *
-	 * @param array $preferences Raw dashboard preferences.
-	 *
-	 * @return array
+	 * @return string
 	 */
-	private function sanitize_preferences(
-		array $preferences ) {
+	private function get_preference_key( $setting_id ) {
 
-		$defaults = $this->get_defaults();
+		$setting_id = (string) $setting_id;
+		$prefix     = 'dashboard.';
 
-		$preferences = array_intersect_key(
-			$preferences,
-			$defaults
-		);
-
-		$registry  = $this->settings_manager->get_registry();
-		$sanitized = array();
-
-		foreach ( $defaults as $preference_key => $default_value ) {
-
-			$value = array_key_exists(
-				$preference_key,
-				$preferences
-			)
-				? $preferences[ $preference_key ]
-				: $default_value;
-
-			$setting_id = $this->get_setting_id(
-				$preference_key
-			);
-
-			$sanitized_value = $registry->sanitize_value(
-				$setting_id,
-				$value
-			);
-
-			$sanitized[ $preference_key ] =
-				null !== $sanitized_value
-					? $sanitized_value
-					: $default_value;
+		if ( 0 !== strpos( $setting_id, $prefix ) ) {
+			return '';
 		}
 
-		return $sanitized;
+		return sanitize_key(
+			substr(
+				$setting_id,
+				strlen( $prefix )
+			)
+		);
 	}
+
+
+
 
 	/**
 	 * Return a valid user ID.
@@ -719,27 +622,4 @@ class User_Preferences_Service {
 		return $user_id;
 	}
 
-	/**
-	 * Determine whether the current user can update preferences.
-	 *
-	 * Users may update their own preferences. Administrators who can
-	 * edit users may also update preferences for another user.
-	 *
-	 * @param int $user_id Target user ID.
-	 *
-	 * @return bool
-	 */
-	private function can_manage_preferences( $user_id ) {
-
-		$current_user_id = get_current_user_id();
-
-		if ( $current_user_id === $user_id ) {
-			return current_user_can( 'read' );
-		}
-
-		return current_user_can(
-			'edit_user',
-			$user_id
-		);
-	}
 }

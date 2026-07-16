@@ -33,6 +33,7 @@ use GOUG\Inc\Dashboard\Services\Update_Service;
 use GOUG\Inc\Dashboard\Services\User_Service;
 use GOUG\Inc\Dashboard\Services\User_Preferences_Service;
 use GOUG\Inc\Settings\Settings_Manager;
+use GOUG\Inc\Settings\Services\User_Settings_Service;
 
 /**
  * Coordinates dashboard services and panel registration.
@@ -123,6 +124,13 @@ class Dashboard_Data {
 	private $settings_manager;
 
 	/**
+	 * Generic framework user settings service.
+	 *
+	 * @var User_Settings_Service
+	 */
+	private $user_settings_service;
+
+	/**
 	 * Initialize the dashboard coordinator.
 	 *
 	 * Draft_Service is injected because its AJAX hooks are registered
@@ -133,8 +141,19 @@ class Dashboard_Data {
 	 */
 	public function __construct( Draft_Service $draft_service ) {
 
-		$this->registry         = new Dashboard_Registry();
+		$this->registry = new Dashboard_Registry();
+
 		$this->settings_manager = new Settings_Manager();
+
+		$this->user_settings_service =
+			new User_Settings_Service(
+				$this->settings_manager
+			);
+
+		$this->user_preferences_service =
+			new User_Preferences_Service(
+				$this->user_settings_service
+			);
 
 		$this->site_service    = new Site_Service();
 		$this->user_service    = new User_Service();
@@ -142,12 +161,17 @@ class Dashboard_Data {
 		$this->system_service  = new System_Service();
 		$this->content_service = new Content_Service();
 
-		$this->user_preferences_service = new User_Preferences_Service(
-			$this->settings_manager
-		);
-
 		$this->panels = $this->build_default_panels(
 			$draft_service
+		);
+
+		$this->user_preferences_service	->migrate_legacy_preferences();
+
+		error_log(
+			var_export(
+				$this->user_preferences_service->get_preferences(),
+				true
+			)
 		);
 	}
 
