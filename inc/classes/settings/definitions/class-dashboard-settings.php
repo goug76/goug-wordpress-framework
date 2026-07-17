@@ -203,6 +203,7 @@ class Dashboard_Settings {
 				'full',
 				'half',
 				'third',
+				'two-thirds',
 				'quarter',
 			);
 

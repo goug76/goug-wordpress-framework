@@ -19,6 +19,7 @@ use GOUG\Inc\Dashboard\Panels\Panel_Site_Health;
 use GOUG\Inc\Dashboard\Panels\Panel_Site_Status;
 use GOUG\Inc\Dashboard\Panels\Panel_Storage_Usage;
 use GOUG\Inc\Dashboard\Panels\Panel_Welcome;
+use GOUG\Inc\Dashboard\Panels\Panel_Dashboard_Preferences;
 use GOUG\Inc\Dashboard\Services\Activity_Service;
 use GOUG\Inc\Dashboard\Services\Content_Service;
 use GOUG\Inc\Dashboard\Services\Database_Service;
@@ -164,8 +165,6 @@ class Dashboard_Data {
 		$this->panels = $this->build_default_panels(
 			$draft_service
 		);
-
-		$this->user_preferences_service	->migrate_legacy_preferences();
 	}
 
 	/**
@@ -358,6 +357,9 @@ class Dashboard_Data {
 				new Development_Service()
 			),
 			new Panel_Welcome(),
+			new Panel_Dashboard_Preferences(
+				$this->user_preferences_service
+			),
 		);
 	}
 

@@ -100,6 +100,11 @@ class Dashboard {
 			array( $this, 'add_dashboard_body_class' )
 		);
 
+		add_action(
+			'admin_enqueue_scripts',
+			array( $this, 'enqueue_dashboard_dependencies' )
+		);
+
 		/*
 		 * Existing notice handling.
 		 *
@@ -266,6 +271,22 @@ class Dashboard {
 			'toplevel_page_%s',
 			self::PAGE_SLUG
 		) === $screen->id;
+	}
+
+	/**
+	 * Enqueue native WordPress dependencies used by the dashboard.
+	 *
+	 * @param string $hook_suffix Current admin page hook.
+	 *
+	 * @return void
+	 */
+	public function enqueue_dashboard_dependencies( $hook_suffix ) {
+
+		if ( $this->page_hook !== $hook_suffix ) {
+			return;
+		}
+
+		add_thickbox();
 	}
 
 	/**

@@ -232,7 +232,7 @@ class Dashboard_Registry {
 				),
 				'quick-draft' => array(
 					'row'      => 3,
-					'width'    => 'full',
+					'width'    => 'two-thirds',
 					'priority' => 10,
 				),
 			),
@@ -255,7 +255,7 @@ class Dashboard_Registry {
 				),
 				'quick-draft' => array(
 					'row'      => 3,
-					'width'    => 'full',
+					'width'    => 'two-thirds',
 					'priority' => 10,
 				),
 			),
@@ -549,6 +549,7 @@ class Dashboard_Registry {
 			'full',
 			'half',
 			'third',
+			'two-thirds',
 			'quarter',
 		);
 
