@@ -166,13 +166,6 @@ class Dashboard_Data {
 		);
 
 		$this->user_preferences_service	->migrate_legacy_preferences();
-
-		error_log(
-			var_export(
-				$this->user_preferences_service->get_preferences(),
-				true
-			)
-		);
 	}
 
 	/**
