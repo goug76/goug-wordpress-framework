@@ -43,7 +43,23 @@ $hidden_count = isset( $hidden_panels )
 	id="<?php echo esc_attr( $modal_id ); ?>"
 	style="display: none;"
 >
-	<div class="goug-dashboard-preferences-modal">
+	<form
+        class="goug-dashboard-preferences-modal"
+        method="post"
+        action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+    >
+        <input
+            type="hidden"
+            name="action"
+            value="goug_save_dashboard_preferences"
+        >
+
+        <?php
+        wp_nonce_field(
+            'goug_save_dashboard_preferences',
+            'goug_dashboard_preferences_nonce'
+        );
+        ?>
 
 		<header class="goug-dashboard-preferences-modal__header">
 
@@ -264,11 +280,9 @@ $hidden_count = isset( $hidden_panels )
 			<p class="submit">
 
 				<button
-					type="button"
-					class="button button-primary"
-					disabled
-					aria-disabled="true"
-				>
+                    type="submit"
+                    class="button button-primary"
+                >
 					<?php
 						echo esc_html__(
 							'Save Preferences',
@@ -280,15 +294,15 @@ $hidden_count = isset( $hidden_panels )
 			</p>
 
 			<p class="description">
-				<?php
-					echo esc_html__(
-						'Saving will be connected in the next development step.',
-						'goug-framework'
-					);
-				?>
-			</p>
+                <?php
+                echo esc_html__(
+                    'Preferences are saved to your user profile.',
+                    'goug-framework'
+                );
+                ?>
+            </p>
 
 		</footer>
 
-	</div>
+    </form>
 </div>
