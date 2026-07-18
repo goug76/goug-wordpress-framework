@@ -4,6 +4,7 @@
  *
  * Expected variables:
  *
+ * @var string $panel_id	Panel ID
  * @var string $title       Optional panel title.
  * @var string $icon        Optional Dashicons class.
  * @var string $body_view   View rendered inside the panel body.
@@ -36,6 +37,10 @@ if ( '' === $body_view ) {
 $classes = array(
 	'goug-panel',
 );
+
+if ( $collapsed ) {
+    $classes[] = 'is-collapsed';
+}
 
 if ( '' !== $class_name ) {
 	$additional_classes = preg_split(
@@ -167,8 +172,26 @@ $attribute_string = implode( ' ', $attribute_parts );
 				</h3>
 			<?php endif; ?>
 
+			<button
+				class="goug-panel__toggle"
+				type="button"
+				aria-expanded="<?php echo $collapsed ? 'false' : 'true'; ?>"
+				aria-label="<?php
+					echo esc_attr(
+						$collapsed
+							? __( 'Expand panel', 'goug-framework' )
+							: __( 'Collapse panel', 'goug-framework' )
+					);
+				?>"
+			>
+				<span
+					class="dashicons dashicons-arrow-down-alt2"
+					aria-hidden="true">
+				</span>
+			</button>
+
 		</header>
-	<?php endif; ?>
+	<?php endif; ?>	
 
 	<div class="goug-panel__body">
 		<?php

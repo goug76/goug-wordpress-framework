@@ -46,6 +46,11 @@ class Dashboard_Settings_Controller {
 			'admin_post_goug_save_dashboard_preferences',
 			array( $this, 'save_preferences' )
 		);
+
+		add_action(
+			'wp_ajax_goug_update_panel_state',
+			array( $this, 'update_panel_state' )
+		);
 	}
 
 	/**
@@ -150,5 +155,78 @@ class Dashboard_Settings_Controller {
 
 		wp_safe_redirect( $redirect_url );
 		exit;
+	}
+
+	/**
+	 * Update a dashboard panel's collapsed state.
+	 *
+	 * @return void
+	 */
+	public function update_panel_state() {
+
+		if ( ! current_user_can( 'read' ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __(
+						'You do not have permission to update dashboard preferences.',
+						'goug-framework'
+					),
+				),
+				403
+			);
+		}
+
+		check_ajax_referer(
+			'goug_dashboard',
+			'_ajax_nonce'
+		);
+
+		$panel_id = isset( $_POST['panel_id'] )
+			? sanitize_key(
+				wp_unslash( $_POST['panel_id'] )
+			)
+			: '';
+
+		$collapsed = isset( $_POST['collapsed'] )
+			? rest_sanitize_boolean(
+				wp_unslash( $_POST['collapsed'] )
+			)
+			: false;
+
+		if ( '' === $panel_id ) {
+			wp_send_json_error(
+				array(
+					'message' => __(
+						'A valid panel ID is required.',
+						'goug-framework'
+					),
+				),
+				400
+			);
+		}
+
+		$updated = $this->preferences_service->set_panel_collapsed(
+			$panel_id,
+			$collapsed
+		);
+
+		if ( ! $updated ) {
+			wp_send_json_error(
+				array(
+					'message' => __(
+						'The panel state could not be saved.',
+						'goug-framework'
+					),
+				),
+				500
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'panel_id'  => $panel_id,
+				'collapsed' => $collapsed,
+			)
+		);
 	}
 }

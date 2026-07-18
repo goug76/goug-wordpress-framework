@@ -90,3 +90,19 @@
 	min-width: 0;
 	padding: var(--goug-space-panel);
 }
+
+.goug-panel.is-collapsed .goug-panel__body {
+    display:none;
+}
+
+.goug-panel__toggle .dashicons {
+	transition: transform .2s ease;
+}
+
+.goug-panel.is-collapsed
+.goug-panel__toggle
+.dashicons {
+
+	transform: rotate(-90deg);
+
+}

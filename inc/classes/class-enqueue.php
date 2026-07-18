@@ -60,9 +60,23 @@ class Enqueue
         wp_enqueue_style('admin_style');
 
         // Registering JS Scripts
-        wp_register_script('admin-js', get_stylesheet_directory_uri() . '/assets/js/admin_js.js', [], $this->theme_version, true);
+        wp_register_script(
+            'admin-js',
+            get_stylesheet_directory_uri() . '/assets/js/admin_js.js',
+            [],
+            $this->theme_version,
+            true
+        );
+
+        wp_localize_script(
+            'admin-js',
+            'gougDashboard',
+            array(
+                'nonce' => wp_create_nonce( 'goug_dashboard' ),
+            )
+        );
 
         // Enqueue JS Scripts
-        wp_enqueue_script('admin-js');
+        wp_enqueue_script( 'admin-js' );
     }
 }
