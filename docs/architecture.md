@@ -2,7 +2,8 @@
 
 ![GOUG Framework Architecture](images/architecture-diagram.png)
 
-> **Version:** 0.5.0-alpha  
+> **Version:** 0.6.0-dev
+> **Status:** Active Development
 > **Last Updated:** July 2026
 
 ---
@@ -19,6 +20,15 @@ The framework is built around one simple philosophy:
 
 Every architectural decision within the framework is made to improve readability, maintainability, and long-term stability while remaining compatible with WordPress core and the broader plugin ecosystem.
 
+## Related Documentation
+
+The following documents complement this architecture guide:
+
+- **CODING-STANDARDS.md** — Development conventions and best practices.
+- **DECISIONS.md** — Architecture Decision Records (ADRs) explaining significant design choices.
+- **ROADMAP.md** — Current development milestones and future direction.
+- **CHANGELOG.md** — Release history and notable changes.
+
 ---
 
 # Framework Goals
@@ -28,6 +38,8 @@ GOUG Framework is designed to provide:
 - A clean object-oriented architecture
 - A modern developer workflow
 - A modular dashboard framework
+- A reusable settings framework
+- A dedicated controller layer
 - Reusable UI components
 - Consistent coding standards
 - Extensible APIs
@@ -137,9 +149,37 @@ Rendered Interface
 
 Each layer has a single responsibility and communicates only with adjacent layers.
 
+## Framework Composition
+
+While the diagram above illustrates the dashboard rendering pipeline, GOUG Framework now consists of several cooperating architectural layers.
+
+The Dashboard Coordinator composes the framework by wiring together services, controllers, registries, and presentation components.
+
+Rendering and user personalization intentionally follow separate execution paths to preserve separation of concerns and maintain a predictable request lifecycle.
+
 ---
 
 # Core Framework Layers
+
+## Dashboard Coordinator
+
+The Dashboard class acts as the composition root for the dashboard subsystem.
+
+Its responsibilities include:
+
+- registering WordPress hooks
+- composing services
+- constructing controllers
+- creating the Dashboard_Data object
+- bootstrapping the dashboard
+
+The coordinator intentionally contains very little business logic.
+
+Instead, responsibilities are delegated to specialized services, controllers, and panel classes.
+
+This approach keeps the dashboard modular while making future features easier to integrate.
+
+---
 
 ## Services
 
@@ -154,6 +194,24 @@ Responsibilities include:
 - Returning normalized data
 
 Services never render HTML.
+
+---
+
+## Controllers
+
+Controllers process user interactions.
+
+Responsibilities include:
+
+- nonce validation
+- capability checks
+- request handling
+- delegating work to services
+- redirecting users
+
+Controllers never perform business logic directly.
+
+Instead, they coordinate framework services responsible for persistence and application behavior.
 
 ---
 
@@ -203,53 +261,67 @@ Components should remain generic whenever possible.
 
 ---
 
+## Settings Framework
+
+GOUG Framework provides a reusable settings framework responsible for storing user and framework configuration.
+
+Dashboard preferences represent the first consumer of this framework.
+
+Future framework modules can reuse the same infrastructure without implementing their own persistence layer.
+
+---
+
+# Dashboard Personalization
+
+Dashboard rendering and user personalization are intentionally separated.
+
+Rendering determines what is displayed.
+
+Personalization determines how each user experiences the dashboard.
+
+Current personalization features include:
+
+- dashboard density
+- greeting visibility
+- motion preferences
+- panel visibility
+
+Additional personalization features can be added without modifying the rendering pipeline.
+
+---
+
 # Dashboard Lifecycle
 
 Every dashboard panel follows the same request lifecycle.
 
 ```text
 Dashboard Request
-
         │
-
         ▼
-
-Panel Registry
-
+Dashboard Coordinator
         │
-
         ▼
-
-Panel
-
+Dashboard_Data
         │
-
         ▼
-
-Service
-
+Dashboard Registry
         │
-
         ▼
-
-Normalized Data
-
+Panels
         │
-
         ▼
-
-Template
-
+Services
         │
-
         ▼
-
+Prepared Data
+        │
+        ▼
+Templates
+        │
+        ▼
 Shared Components
-
         │
-
         ▼
-
 Rendered Dashboard
 ```
 
@@ -265,10 +337,19 @@ assets/
     icons/
 
 inc/
-    classes/
-        dashboard/
-        framework/
-        services/
+└── classes/
+    ├── dashboard/
+    │   ├── controllers/
+    │   ├── panels/
+    │   ├── services/
+    │   ├── providers/
+    │   └── data/
+    │
+    ├── framework/
+    │
+    └── settings/
+        ├── services/
+        └── registry/
 
 src/
     js/
@@ -366,9 +447,7 @@ GOUG Framework will continue expanding while preserving its architectural princi
 
 Future areas of development include:
 
-- User-customizable dashboards
 - Drag-and-drop layouts
-- Panel visibility preferences
 - Widget SDK
 - Plugin extension APIs
 - Notification Center

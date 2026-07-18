@@ -1,6 +1,7 @@
 # GOUG Framework Architecture Decisions
 
-> **Version:** 0.5.0-alpha  
+> **Version:** 0.6.0-dev
+> **Status:** Active Development
 > **Last Updated:** July 2026
 
 ---
@@ -13,6 +14,15 @@ Unlike commit messages or release notes, ADRs explain **why** important decision
 
 These records provide institutional knowledge for future contributors and help ensure the framework evolves consistently over time.
 
+## Related Documentation
+
+The following documents complement this Architecture Decision Record (ADR) collection:
+
+- **ARCHITECTURE.md** — Overall framework architecture and design.
+- **CODING-STANDARDS.md** — Development conventions and architectural patterns.
+- **ROADMAP.md** — Project milestones and future direction.
+- **CHANGELOG.md** — Release history and notable changes.
+
 ---
 
 # Decision Index
@@ -24,6 +34,8 @@ These records provide institutional knowledge for future contributors and help e
 | ADR-003 | Three Uses Before Abstraction | Accepted |
 | ADR-004 | Dashboard Registry | Accepted |
 | ADR-005 | Modern Asset Pipeline | Accepted |
+| ADR-006 | User-Customizable Dashboard Layout | Empty |
+| ADR-007 | Framework Registry Pattern | Accepted |
 
 ---
 

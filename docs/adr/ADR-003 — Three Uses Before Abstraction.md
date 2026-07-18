@@ -60,3 +60,11 @@ Each abstraction emerged after repeated implementation rather than speculation.
 Duplicate first.
 
 Abstract later.
+
+---
+
+## Maintaining ADRs
+
+Architecture Decision Records are intended to document significant architectural decisions that affect the long-term structure of GOUG Framework.
+
+ADRs are permanent historical records. Existing records should not be rewritten to reflect new decisions. Instead, new ADRs should supersede earlier decisions while preserving the architectural history of the project.

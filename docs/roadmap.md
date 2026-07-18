@@ -1,6 +1,37 @@
 # GOUG Framework Roadmap
 
-> **Current Version:** 0.5.0-alpha
+> **Version:** 0.6.0-dev
+> **Status:** Active Development
+> **Last Updated:** July 2026
+
+---
+
+## Related Documentation
+
+- **ARCHITECTURE.md** – Overall framework architecture.
+- **CODING-STANDARDS.md** – Development conventions.
+- **DECISIONS.md** – Architecture Decision Records.
+- **CHANGELOG.md** – Release history.
+
+---
+
+## Current Project Status
+
+Current Release
+
+0.6.0-dev
+
+Current Focus
+
+Dashboard Personalization
+
+Overall Progress
+
+███████░░░ 70%
+
+The framework foundation is complete.
+
+Current development is focused on improving user experience, extensibility, and developer tooling rather than large-scale architectural changes.
 
 ---
 
@@ -146,5 +177,19 @@ Major milestones include:
 - JavaScript module architecture
 - Modern asset pipeline
 - Complete developer documentation
+- Dashboard Preferences
+- Settings Framework
+- Panel Visibility
+- Controller Layer
+- Dependency Injection
+- Multi-user preference persistence
 
 This milestone represents the completion of the framework foundation and marks the beginning of feature expansion.
+
+## Roadmap Philosophy
+
+GOUG Framework favors incremental, well-tested improvements over rapid feature expansion.
+
+Major architectural changes should be introduced only when they improve extensibility, maintainability, or developer experience.
+
+Backward compatibility and code clarity take precedence over feature quantity.

@@ -1,7 +1,17 @@
 # GOUG Framework Coding Standards
 
-> **Version:** 0.5.0-alpha  
+> **Version:** 0.6.0-dev
+> **Status:** Active Development
 > **Last Updated:** July 2026
+
+---
+
+## Related Documentation
+
+- **ARCHITECTURE.md** – Overall framework architecture.
+- **DECISIONS.md** – Architecture Decision Records.
+- **ROADMAP.md** – Project milestones and future direction.
+- **CHANGELOG.md** – Release history.
 
 ---
 
@@ -251,7 +261,7 @@ unless the context is obvious.
 
 ---
 
-# Arrays
+## Arrays
 
 Associative arrays should use aligned keys where readability improves.
 
@@ -267,57 +277,122 @@ Normalize repeated array structures through helper methods whenever appropriate.
 
 ---
 
-# Services
+## Dependency Injection
 
-Services:
+GOUG Framework favors constructor dependency injection for shared services.
 
-✔ collect data
+Coordinator classes are responsible for constructing shared dependencies and supplying them to consumers.
 
-✔ calculate
+Classes should never instantiate shared services that they do not own.
 
-✔ normalize
+### Good
 
-✔ cache
+```php
+public function __construct(
+    Dashboard_Data $dashboard_data,
+    User_Preferences_Service $preferences
+) {
+    $this->dashboard_data = $dashboard_data;
+    $this->preferences = $preferences;
+}
+```
 
-Services never:
+### Avoid
 
-✘ render HTML
+```php
+$this->preferences = new User_Preferences_Service();
+```
 
-✘ register panels
+Dependency injection improves:
 
-✘ output markup
-
----
-
-# Panels
-
-Panels:
-
-✔ define metadata
-
-✔ request service data
-
-✔ load templates
-
-Panels never:
-
-✘ query WordPress directly
-
-✘ perform heavy calculations
+- Testability
+- Separation of concerns
+- Reusability
+- Clear ownership
 
 ---
 
-# Templates
+## Coordinator Classes
 
-Templates:
+Coordinator classes compose subsystems.
 
-✔ render HTML
+Their responsibilities include:
 
-✔ escape output
+- Constructing dependencies
+- Registering hooks
+- Bootstrapping services
+- Delegating work
 
-✔ validate expected data
+Coordinator classes should contain very little business logic.
 
-Templates should avoid business logic.
+Business logic belongs inside services.
+
+Presentation belongs inside templates.
+
+Persistence belongs inside the settings framework.
+
+A coordinator should answer the question:
+
+> How do these pieces work together?
+
+It should not answer:
+
+> How does this feature work?
+
+---
+
+## Services
+
+Services should:
+
+- Own business logic.
+- Be framework-agnostic whenever practical.
+- Avoid direct rendering.
+- Avoid direct request handling.
+- Receive dependencies through constructors.
+
+Services should expose clear, focused methods and avoid combining unrelated responsibilities.
+
+## Panels
+
+Panels are responsible for registering dashboard modules and preparing the data required by their templates.
+
+Panels may:
+
+- Register panel metadata.
+- Request prepared data from services.
+- Supply template data.
+- Define panel visibility or capability requirements.
+
+Panels must not:
+
+- Save data.
+- Validate requests.
+- Redirect users.
+- Render HTML directly.
+- Construct shared services.
+
+## Templates
+
+Templates are presentation-only.
+
+Templates may:
+
+- Render prepared values.
+- Escape output.
+- Include shared components.
+- Apply semantic markup.
+
+Templates must not:
+
+- Query WordPress directly.
+- Perform filtering.
+- Check permissions.
+- Save data.
+- Handle requests.
+- Contain business logic.
+
+All data should be prepared before rendering.
 
 ---
 
@@ -455,3 +530,17 @@ Every pull request (or even every commit) should be mentally checked against que
 - Does it respect WordPress conventions?
 - Would I write the next feature the same way?
 - Can I explain this code six months from now without rereading it three times?
+
+## Framework Philosophy
+
+GOUG Framework values:
+
+- Readability over cleverness.
+- Explicit behavior over hidden magic.
+- Composition over inheritance.
+- Small, focused classes.
+- Stable public APIs.
+- Incremental evolution.
+- WordPress compatibility first.
+
+When multiple solutions exist, choose the one that is easiest for the next developer to understand.
