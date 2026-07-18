@@ -62,7 +62,7 @@ class Panel_At_A_Glance implements Dashboard_Panel {
 				'body_data'  => array(
 					'items'  => $items,
 				),
-				'capability' => 'manage_options',
+				'capability' => 'edit_posts',
 				'attributes' => array(
 					'data-panel-id' => 'at-a-glance',
 				),

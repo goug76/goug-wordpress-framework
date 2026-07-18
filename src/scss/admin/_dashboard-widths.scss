@@ -14,6 +14,10 @@
 	grid-column: span 4;
 }
 
+.goug-panel--width-two-thirds {
+	grid-column: span 8;
+}
+
 .goug-panel--width-quarter {
 	grid-column: span 3;
 }
@@ -38,5 +42,14 @@
 	.goug-panel--width-third,
 	.goug-panel--width-quarter {
 		grid-column: span 12;
+	}
+}
+
+/**
+ * narrow admin layouts.
+ */
+@media (max-width: 782px) {
+	.goug-panel {
+		grid-column: 1 / -1;
 	}
 }

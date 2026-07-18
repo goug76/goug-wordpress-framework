@@ -14,8 +14,12 @@ defined( 'ABSPATH' ) || exit;
 
 use GOUG\Inc\Traits\Singleton;
 use GOUG\Inc\Dashboard\Dashboard_Data;
-use function GOUG\Inc\Helpers\get_brand_logo_url;
 use GOUG\Inc\Dashboard\Services\Draft_Service;
+use GOUG\Inc\Dashboard\Controllers\Dashboard_Settings_Controller;
+use GOUG\Inc\Dashboard\Services\User_Preferences_Service;
+use GOUG\Inc\Settings\Settings_Manager;
+use GOUG\Inc\Settings\Services\User_Settings_Service;
+use function GOUG\Inc\Helpers\get_brand_logo_url;
 use WP_Admin_Bar;
 
 class Dashboard {
@@ -32,13 +36,13 @@ class Dashboard {
 	/**
 	 * Capability required to access the custom dashboard.
 	 *
-	 * We are keeping this restricted to administrators for now because
-	 * the current dashboard contains links to themes, plugins, users,
-	 * updates, and other administrative screens.
+	 * The dashboard itself is available to authenticated WordPress users.
+	 * Individual panels remain responsible for enforcing their own
+	 * capability requirements through the Dashboard Registry.
 	 *
 	 * @var string
 	 */
-	private const CAPABILITY = 'manage_options';
+	private const CAPABILITY = 'read';
 
 	/**
 	 * Dashboard page hook returned by add_menu_page().
@@ -57,6 +61,20 @@ class Dashboard {
 	private $draft_service;
 
 	/**
+	 * Current-user dashboard preference service.
+	 *
+	 * @var User_Preferences_Service
+	 */
+	private $user_preferences_service;
+
+	/**
+	 * Dashboard settings interaction controller.
+	 *
+	 * @var Dashboard_Settings_Controller
+	 */
+	private $settings_controller;
+
+	/**
 	 * Initialize the dashboard module.
 	 */
 	protected function __construct() {
@@ -71,6 +89,24 @@ class Dashboard {
 
 		$this->draft_service = new Draft_Service();
 		$this->draft_service->register_hooks();
+
+		$settings_manager = new Settings_Manager();
+
+		$user_settings_service = new User_Settings_Service(
+			$settings_manager
+		);
+
+		$this->user_preferences_service =
+			new User_Preferences_Service(
+				$user_settings_service
+			);
+
+		$this->settings_controller =
+			new Dashboard_Settings_Controller(
+				$this->user_preferences_service
+			);
+
+		$this->settings_controller->register_hooks();
 
 		$this->setup_hooks();
 	}
@@ -100,18 +136,14 @@ class Dashboard {
 			array( $this, 'add_dashboard_body_class' )
 		);
 
-		/*
-		 * Existing notice handling.
-		 *
-		 * We are leaving this behavior in place until the dashboard
-		 * template is refactored. The current template manually renders
-		 * admin notices, so changing both pieces at once would make
-		 * troubleshooting harder.
-		 */
+		add_action(
+			'admin_enqueue_scripts',
+			array( $this, 'enqueue_dashboard_dependencies' )
+		);
+
 		add_action(
 			'admin_notices',
-			array( $this, 'remove_admin_duplicates' ),
-			1
+			array( $this, 'render_preferences_notice' )
 		);
 
 		/*
@@ -145,9 +177,9 @@ class Dashboard {
 	/**
 	 * Register the replacement dashboard page.
 	 *
-	 * The default dashboard menu is removed only for users who can
-	 * access the custom dashboard. Other users retain the standard
-	 * WordPress dashboard.
+	 * The custom dashboard is available to authenticated WordPress users.
+	 * Individual panels are filtered according to visibility and the
+	 * current user's capabilities.
 	 *
 	 * @return void
 	 */
@@ -173,8 +205,9 @@ class Dashboard {
 	/**
 	 * Redirect the native WordPress dashboard to the custom dashboard.
 	 *
-	 * Users who cannot access the custom dashboard remain on the
-	 * standard WordPress dashboard.
+	 * Users who can access the WordPress admin area are redirected to the
+	 * GOUG dashboard. The Dashboard Registry determines which panels each
+	 * user is allowed to view.
 	 *
 	 * @return void
 	 */
@@ -199,6 +232,9 @@ class Dashboard {
 	/**
 	 * Render the custom dashboard template.
 	 *
+	 * Panel-level permissions are applied by the Dashboard Registry before
+	 * the dashboard template receives its data.
+	 *
 	 * @return void
 	 */
 	public function render_dashboard() {
@@ -213,9 +249,10 @@ class Dashboard {
 		}
 
 		$dashboard_data = new Dashboard_Data(
-			$this->draft_service
+			$this->draft_service,
+			$this->user_preferences_service
 		);
-		$data           = $dashboard_data->get_data();
+		$data = $dashboard_data->get_data();
 
 		View::render(
 			'dashboard/admin-dashboard',
@@ -262,6 +299,64 @@ class Dashboard {
 			'toplevel_page_%s',
 			self::PAGE_SLUG
 		) === $screen->id;
+	}
+
+	/**
+	 * Enqueue native WordPress dependencies used by the dashboard.
+	 *
+	 * @param string $hook_suffix Current admin page hook.
+	 *
+	 * @return void
+	 */
+	public function enqueue_dashboard_dependencies( $hook_suffix ) {
+
+		if ( $this->page_hook !== $hook_suffix ) {
+			return;
+		}
+
+		add_thickbox();
+	}
+
+	/**
+	 * Display the dashboard preference save result.
+	 *
+	 * @return void
+	 */
+	public function render_preferences_notice() {
+
+		if ( ! $this->is_dashboard_screen() ) {
+			return;
+		}
+
+		if ( ! isset( $_GET['goug_preferences_saved'] ) ) {
+			return;
+		}
+
+		$saved = '1' === sanitize_key(
+			wp_unslash(
+				$_GET['goug_preferences_saved']
+			)
+		);
+
+		$class = $saved
+			? 'notice notice-success is-dismissible'
+			: 'notice notice-error is-dismissible';
+
+		$message = $saved
+			? __(
+				'Dashboard preferences saved.',
+				'goug-framework'
+			)
+			: __(
+				'Dashboard preferences could not be saved.',
+				'goug-framework'
+			);
+
+		printf(
+			'<div class="%1$s"><p>%2$s</p></div>',
+			esc_attr( $class ),
+			esc_html( $message )
+		);
 	}
 
 	/**

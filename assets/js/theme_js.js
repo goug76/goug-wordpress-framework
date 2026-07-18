@@ -1,0 +1,1 @@
+const n=window.jQuery;class s{constructor(){this.events()}events(){n(document).on("keydown",this.keyPressDispatcher.bind(this))}keyPressDispatcher(e){if(e.ctrlKey&&e.altKey&&e.keyCode===36){e.preventDefault();let t=new URL(window.location.href),o=`${t.protocol}//${t.hostname}`;window.location.href=`${o}/wp-admin`}}}new s;

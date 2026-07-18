@@ -8,9 +8,10 @@
 	width: 100%;
 	min-width: 0;
 
-	max-height: clamp(360px, 48vh, 520px);
+	max-height: clamp(340px, 46vh, 460px);
 	overflow-y: auto;
-	overscroll-behavior: contain;
+	overscroll-behavior-y: auto;
+	overscroll-behavior: auto;
 	scrollbar-gutter: stable;
 
 	&::before {

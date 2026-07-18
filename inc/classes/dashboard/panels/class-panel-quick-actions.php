@@ -79,7 +79,7 @@ class Panel_Quick_Actions implements Dashboard_Panel {
 				'body_data'  => array(
 					'groups' => $groups,
 				),
-				'capability' => 'manage_options',
+				'capability' => 'read',
 				'attributes' => array(
 					'data-panel-id' => 'quick-actions',
 				),

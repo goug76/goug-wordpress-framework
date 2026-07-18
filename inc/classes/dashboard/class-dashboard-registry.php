@@ -111,7 +111,8 @@ class Dashboard_Registry {
 	/**
 	 * Return all visible, accessible panels.
 	 *
-	 * Panels are sorted from lowest to highest priority.
+	 * Panels are filtered by capability, adjusted for the current user's
+	 * default layout profile, and sorted by row, priority, and ID.
 	 *
 	 * @return array
 	 */
@@ -120,6 +121,10 @@ class Dashboard_Registry {
 		$panels = array_filter(
 			$this->panels,
 			array( $this, 'is_panel_available' )
+		);
+
+		$panels = $this->apply_layout_profile(
+			$panels
 		);
 
 		uasort(
@@ -169,6 +174,206 @@ class Dashboard_Registry {
 	}
 
 	/**
+	 * Return the current user's default dashboard layout profile.
+	 *
+	 * Profiles are resolved through native WordPress capabilities rather
+	 * than role names. Custom roles therefore inherit the most appropriate
+	 * layout automatically.
+	 *
+	 * @return string
+	 */
+	private function get_layout_profile() {
+
+		if ( current_user_can( 'manage_options' ) ) {
+			return 'administration';
+		}
+
+		if ( current_user_can( 'edit_pages' ) ) {
+			return 'editorial';
+		}
+
+		if ( current_user_can( 'edit_posts' ) ) {
+			return 'content';
+		}
+
+		return 'basic';
+	}
+
+	/**
+	 * Return panel layout overrides for a dashboard profile.
+	 *
+	 * The administration profile uses the panel metadata registered by
+	 * each panel and therefore requires no overrides.
+	 *
+	 * @param string $profile Dashboard layout profile.
+	 *
+	 * @return array
+	 */
+	private function get_layout_overrides( $profile ) {
+
+		$layouts = array(
+			'basic' => array(),
+
+			'content' => array(
+				'at-a-glance' => array(
+					'row'      => 1,
+					'width'    => 'half',
+					'priority' => 10,
+				),
+				'quick-actions' => array(
+					'row'      => 1,
+					'width'    => 'half',
+					'priority' => 20,
+				),
+				'recent-activity' => array(
+					'row'      => 2,
+					'width'    => 'full',
+					'priority' => 10,
+				),
+				'quick-draft' => array(
+					'row'      => 3,
+					'width'    => 'two-thirds',
+					'priority' => 10,
+				),
+			),
+
+			'editorial' => array(
+				'at-a-glance' => array(
+					'row'      => 1,
+					'width'    => 'half',
+					'priority' => 10,
+				),
+				'quick-actions' => array(
+					'row'      => 1,
+					'width'    => 'half',
+					'priority' => 20,
+				),
+				'recent-activity' => array(
+					'row'      => 2,
+					'width'    => 'full',
+					'priority' => 10,
+				),
+				'quick-draft' => array(
+					'row'      => 3,
+					'width'    => 'two-thirds',
+					'priority' => 10,
+				),
+			),
+
+			'administration' => array(),
+		);
+
+		/**
+		 * Filter the available dashboard layout profiles.
+		 *
+		 * @param array  $layouts All dashboard layout profiles.
+		 * @param string $profile Current profile identifier.
+		 */
+		$layouts = apply_filters(
+			'goug_dashboard_layout_profiles',
+			$layouts,
+			$profile
+		);
+
+		return isset( $layouts[ $profile ] )
+			&& is_array( $layouts[ $profile ] )
+				? $layouts[ $profile ]
+				: array();
+	}
+
+	/**
+	 * Apply the current user's default layout profile.
+	 *
+	 * Panel capability checks occur before this method runs. Layout
+	 * overrides therefore affect only panels already available to the
+	 * current user.
+	 *
+	 * @param array $panels Available dashboard panels.
+	 *
+	 * @return array
+	 */
+	private function apply_layout_profile( $panels ) {
+
+		if ( ! is_array( $panels ) || empty( $panels ) ) {
+			return array();
+		}
+
+		$profile   = $this->get_layout_profile();
+		$overrides = $this->get_layout_overrides(
+			$profile
+		);
+
+		if ( empty( $overrides ) ) {
+			return $panels;
+		}
+
+		foreach ( $overrides as $panel_id => $layout ) {
+
+			if (
+				! isset( $panels[ $panel_id ] )
+				|| ! is_array( $layout )
+			) {
+				continue;
+			}
+
+			$panels[ $panel_id ] = $this->apply_panel_layout(
+				$panels[ $panel_id ],
+				$layout
+			);
+		}
+
+		return $panels;
+	}
+
+	/**
+	 * Apply layout metadata to one panel.
+	 *
+	 * Updates the panel metadata, semantic width class, and row attribute
+	 * together so the rendered panel remains internally consistent.
+	 *
+	 * @param array $panel  Normalized panel definition.
+	 * @param array $layout Layout override.
+	 *
+	 * @return array
+	 */
+	private function apply_panel_layout(
+		$panel,
+		$layout ) {
+
+		if ( isset( $layout['row'] ) ) {
+			$panel['row'] = max(
+				1,
+				(int) $layout['row']
+			);
+		}
+
+		if ( isset( $layout['priority'] ) ) {
+			$panel['priority'] = max(
+				0,
+				(int) $layout['priority']
+			);
+		}
+
+		if ( isset( $layout['width'] ) ) {
+			$width = $this->normalize_width(
+				$layout['width']
+			);
+
+			$panel['width']      = $width;
+			$panel['class_name'] = $this->replace_width_class(
+				$panel['class_name'],
+				$width
+			);
+		}
+
+		$panel['attributes']['data-panel-row'] = (string) $panel['row'];
+		$panel['attributes']['data-layout-profile'] =
+			$this->get_layout_profile();
+
+		return $panel;
+	}
+
+	/**
 	 * Normalize and validate a panel definition.
 	 *
 	 * @param array $panel Raw panel definition.
@@ -189,6 +394,7 @@ class Dashboard_Registry {
 			'body_view'  => '',
 			'body_data'  => array(),
 			'capability' => 'read',
+			'profiles'   => array(),
 			'visible'    => true,
 			'attributes' => array(),
 		);
@@ -204,28 +410,10 @@ class Dashboard_Registry {
 		$panel['icon_svg'] 	 = sanitize_file_name(
 			(string) $panel['icon_svg']
 		);
-		$allowed_widths = array(
-			'full',
-			'half',
-			'third',
-			'quarter',
+		$panel['width'] = $this->normalize_width(
+			$panel['width']
 		);
 
-		$panel['width'] = strtolower(
-			trim(
-				(string) $panel['width']
-			)
-		);
-
-		if (
-			! in_array(
-				$panel['width'],
-				$allowed_widths,
-				true
-			)
-		) {
-			$panel['width'] = 'full';
-		}
 		$panel['row'] = max(
 			1,
 			(int) $panel['row']
@@ -243,6 +431,16 @@ class Dashboard_Registry {
             ? $panel['attributes']
             : array();
 		$panel['capability'] = (string) $panel['capability'];
+		$panel['profiles'] = is_array( $panel['profiles'] )
+			? array_values(
+				array_filter(
+					array_map(
+						'sanitize_key',
+						$panel['profiles']
+					)
+				)
+			)
+			: array();
 		$panel['visible']    = (bool) $panel['visible'];
 
 		if (
@@ -255,19 +453,48 @@ class Dashboard_Registry {
 
 		$panel['attributes']['data-panel-row'] = (string) $panel['row'];
 
-		$panel['class_name'] = trim(
-			sprintf(
-				'%s goug-panel--width-%s',
-				$panel['class_name'],
-				$panel['width']
-			)
+		$panel['class_name'] = $this->replace_width_class(
+			$panel['class_name'],
+			$panel['width']
 		);
 
 		return $panel;
 	}
 
 	/**
+	 * Replace a panel's semantic width class.
+	 *
+	 * @param string $class_name Existing panel classes.
+	 * @param string $width      Normalized semantic width.
+	 *
+	 * @return string
+	 */
+	private function replace_width_class(
+		$class_name,
+		$width ) {
+
+		$class_name = preg_replace(
+			'/\bgoug-panel--width-(?:full|half|third|quarter)\b/',
+			'',
+			(string) $class_name
+		);
+
+		return trim(
+			sprintf(
+				'%s goug-panel--width-%s',
+				$class_name,
+				$width
+			)
+		);
+	}
+
+	/**
 	 * Determine whether a panel should be returned.
+	 *
+	 * Panels must be visible, available to the current user's capability,
+	 * and compatible with the active dashboard layout profile.
+	 *
+	 * An empty profiles array makes the panel available to every profile.
 	 *
 	 * @param array $panel Panel definition.
 	 *
@@ -286,6 +513,58 @@ class Dashboard_Registry {
 			? $panel['capability']
 			: 'read';
 
-		return current_user_can( $capability );
+		if ( ! current_user_can( $capability ) ) {
+			return false;
+		}
+
+		$profiles = isset( $panel['profiles'] )
+			&& is_array( $panel['profiles'] )
+				? $panel['profiles']
+				: array();
+
+		if (
+			! empty( $profiles ) &&
+			! in_array(
+				$this->get_layout_profile(),
+				$profiles,
+				true
+			)
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Normalize a semantic dashboard panel width.
+	 *
+	 * @param string $width Requested width.
+	 *
+	 * @return string
+	 */
+	private function normalize_width( $width ) {
+
+		$allowed_widths = array(
+			'full',
+			'half',
+			'third',
+			'two-thirds',
+			'quarter',
+		);
+
+		$width = strtolower(
+			trim(
+				(string) $width
+			)
+		);
+
+		return in_array(
+			$width,
+			$allowed_widths,
+			true
+		)
+			? $width
+			: 'full';
 	}
 }

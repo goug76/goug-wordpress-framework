@@ -10,6 +10,7 @@
  * @var array  $body_data   Data passed to the body view.
  * @var string $class_name  Optional additional wrapper classes.
  * @var array  $attributes  Optional HTML data and ARIA attributes.
+ * @var bool   $collapsed   Whether the panel is initially collapsed.
  *
  * @package GOUG
  */
@@ -26,6 +27,7 @@ $attributes = isset( $attributes ) && is_array( $attributes )
 	? $attributes
 	: array();
 $class_name = isset( $class_name ) ? (string) $class_name : '';
+$collapsed 	= ! empty( $collapsed );
 
 if ( '' === $body_view ) {
 	return;

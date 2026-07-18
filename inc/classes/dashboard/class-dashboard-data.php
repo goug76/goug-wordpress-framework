@@ -18,6 +18,8 @@ use GOUG\Inc\Dashboard\Panels\Panel_Recent_Activity;
 use GOUG\Inc\Dashboard\Panels\Panel_Site_Health;
 use GOUG\Inc\Dashboard\Panels\Panel_Site_Status;
 use GOUG\Inc\Dashboard\Panels\Panel_Storage_Usage;
+use GOUG\Inc\Dashboard\Panels\Panel_Welcome;
+use GOUG\Inc\Dashboard\Panels\Panel_Dashboard_Preferences;
 use GOUG\Inc\Dashboard\Services\Activity_Service;
 use GOUG\Inc\Dashboard\Services\Content_Service;
 use GOUG\Inc\Dashboard\Services\Database_Service;
@@ -30,6 +32,7 @@ use GOUG\Inc\Dashboard\Services\Storage_Service;
 use GOUG\Inc\Dashboard\Services\System_Service;
 use GOUG\Inc\Dashboard\Services\Update_Service;
 use GOUG\Inc\Dashboard\Services\User_Service;
+use GOUG\Inc\Dashboard\Services\User_Preferences_Service;
 
 /**
  * Coordinates dashboard services and panel registration.
@@ -106,17 +109,27 @@ class Dashboard_Data {
 	private $panels = array();
 
 	/**
-	 * Initialize the dashboard coordinator.
+	 * Current-user dashboard preference service.
 	 *
-	 * Draft_Service is injected because its AJAX hooks are registered
-	 * outside the dashboard rendering request and must use the same
-	 * service instance.
-	 *
-	 * @param Draft_Service $draft_service Quick Draft service.
+	 * @var User_Preferences_Service
 	 */
-	public function __construct( Draft_Service $draft_service ) {
+	private $user_preferences_service;
 
-		$this->registry        = new Dashboard_Registry();
+	/**
+ * Initialize the dashboard coordinator.
+ *
+ * @param Draft_Service            $draft_service            Quick Draft service.
+ * @param User_Preferences_Service $user_preferences_service User preferences service.
+ */
+public function __construct(
+	Draft_Service $draft_service,
+	User_Preferences_Service $user_preferences_service ) {
+
+		$this->registry = new Dashboard_Registry();
+
+		$this->user_preferences_service =
+			$user_preferences_service;
+
 		$this->site_service    = new Site_Service();
 		$this->user_service    = new User_Service();
 		$this->update_service  = new Update_Service();
@@ -131,20 +144,137 @@ class Dashboard_Data {
 	/**
 	 * Return all currently supported dashboard data.
 	 *
+	 * Registered panels are first filtered and arranged by the Registry.
+	 * Current-user preferences are then applied before the panels are
+	 * passed to the dashboard template.
+	 *
 	 * @return array
 	 */
 	public function get_data() {
 
 		$this->register_default_panels();
 
-		return array(
-			'site'    => $this->site_service->get_data(),
-			'user'    => $this->user_service->get_data(),
-			'counts'  => $this->content_service->get_data(),
-			'updates' => $this->update_service->get_data(),
-			'system'  => $this->system_service->get_data(),
-			'panels'  => $this->registry->get_panels(),
+		$preferences = $this->user_preferences_service->get_preferences();
+
+		$panels = $this->registry->get_panels();
+
+		$panels = $this->apply_hidden_panel_preferences(
+			$panels
 		);
+
+		$panels = $this->apply_collapsed_panel_preferences(
+			$panels,
+			$preferences
+		);
+
+		return array(
+			'site'        => $this->site_service->get_data(),
+			'user'        => $this->user_service->get_data(),
+			'counts'      => $this->content_service->get_data(),
+			'updates'     => $this->update_service->get_data(),
+			'system'      => $this->system_service->get_data(),
+			'preferences' => $preferences,
+			'panels'      => $panels,
+		);
+	}
+
+	/**
+	 * Remove panels hidden by the current user.
+	 *
+	 * Capability and dashboard-profile checks have already been applied by
+	 * the Registry. This method only applies the current user's personal
+	 * panel visibility preferences.
+	 *
+	 * Unknown or unavailable panel IDs are ignored automatically.
+	 *
+	 * @param array $panels Available dashboard panels.
+	 *
+	 * @return array
+	 */
+	private function apply_hidden_panel_preferences(
+		array $panels ) {
+
+		if ( empty( $panels ) ) {
+			return array();
+		}
+
+		$hidden_panels = $this->user_preferences_service->get_preference(
+			'hidden_panels'
+		);
+
+		if ( ! is_array( $hidden_panels ) || empty( $hidden_panels ) ) {
+			return $panels;
+		}
+
+		foreach ( $hidden_panels as $panel_id ) {
+
+			$panel_id = sanitize_key(
+				$panel_id
+			);
+
+			if ( '' === $panel_id ) {
+				continue;
+			}
+
+			unset(
+				$panels[ $panel_id ]
+			);
+		}
+
+		return $panels;
+	}
+
+	/**
+	 * Apply saved collapsed state to dashboard panel metadata.
+	 *
+	 * This method prepares panel classes and ARIA attributes. Interactive
+	 * collapsing and preference persistence are handled separately by the
+	 * dashboard panel controller.
+	 *
+	 * @param array $panels      Available dashboard panels.
+	 * @param array $preferences Current-user dashboard preferences.
+	 *
+	 * @return array
+	 */
+	private function apply_collapsed_panel_preferences(
+		array $panels,
+		array $preferences ) {
+
+		$collapsed_panels = isset( $preferences['collapsed_panels'] )
+			&& is_array( $preferences['collapsed_panels'] )
+				? $preferences['collapsed_panels']
+				: array();
+
+		foreach ( $panels as $panel_id => $panel ) {
+
+			if ( ! is_array( $panel ) ) {
+				continue;
+			}
+
+			$is_collapsed = in_array(
+				$panel_id,
+				$collapsed_panels,
+				true
+			);
+
+			$panel['collapsed'] = $is_collapsed;
+
+			$panel['attributes']['data-panel-id'] = $panel_id;
+			$panel['attributes']['data-collapsed'] = $is_collapsed
+				? 'true'
+				: 'false';
+
+			if ( $is_collapsed ) {
+				$panel['class_name'] = trim(
+					$panel['class_name']
+					. ' goug-panel--collapsed'
+				);
+			}
+
+			$panels[ $panel_id ] = $panel;
+		}
+
+		return $panels;
 	}
 
 	/**
@@ -158,8 +288,7 @@ class Dashboard_Data {
 	 * @return Dashboard_Panel[]
 	 */
 	private function build_default_panels(
-		Draft_Service $draft_service
-	) {
+		Draft_Service $draft_service ) {
 
 		$database_service = new Database_Service();
 
@@ -200,6 +329,10 @@ class Dashboard_Data {
 
 			new Panel_Development(
 				new Development_Service()
+			),
+			new Panel_Welcome(),
+			new Panel_Dashboard_Preferences(
+				$this->user_preferences_service
 			),
 		);
 	}
