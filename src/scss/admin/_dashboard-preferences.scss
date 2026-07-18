@@ -123,3 +123,22 @@
 		}
 	}
 }
+
+.goug-dashboard-panel-visibility {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px 20px;
+	margin: 4px 0 10px;
+
+	&__option {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+	.goug-dashboard-panel-visibility {
+		grid-template-columns: 1fr;
+	}
+}

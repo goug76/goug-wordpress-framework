@@ -9,6 +9,7 @@
  * @var bool   $show_greeting    Whether the greeting is enabled.
  * @var bool   $enable_motion    Whether animations are enabled.
  * @var int    $hidden_panels    Number of hidden panels.
+ * @var array  $available_panels Available dashboard panel definitions.
  *
  * @package GOUG
  */
@@ -37,6 +38,11 @@ $motion_enabled   = ! empty( $enable_motion );
 $hidden_count = isset( $hidden_panels )
 	? absint( $hidden_panels )
 	: 0;
+
+$panels = isset( $available_panels )
+	&& is_array( $available_panels )
+		? $available_panels
+		: array();
 ?>
 
 <div
@@ -245,30 +251,104 @@ $hidden_count = isset( $hidden_panels )
 				<tbody>
 
 					<tr>
-						<th scope="row">
-							<?php
-								echo esc_html__(
-									'Hidden Panels',
-									'goug-framework'
-								);
-							?>
-						</th>
+                        <th scope="row">
+                            <?php
+                            echo esc_html__(
+                                'Visible Panels',
+                                'goug-framework'
+                            );
+                            ?>
+                        </th>
 
-						<td>
-							<strong>
-								<?php echo esc_html( $hidden_count ); ?>
-							</strong>
+                        <td>
+                            <?php if ( ! empty( $panels ) ) : ?>
 
-							<p class="description">
-								<?php
-									echo esc_html__(
-										'Individual panel visibility controls will be added in a later step.',
-										'goug-framework'
-									);
-								?>
-							</p>
-						</td>
-					</tr>
+                                <fieldset class="goug-dashboard-panel-visibility">
+
+                                    <legend class="screen-reader-text">
+                                        <?php
+                                        echo esc_html__(
+                                            'Choose which panels appear on your dashboard',
+                                            'goug-framework'
+                                        );
+                                        ?>
+                                    </legend>
+
+                                    <?php foreach ( $panels as $panel ) : ?>
+
+                                        <?php
+                                        $panel_id = isset( $panel['id'] )
+                                            ? sanitize_key( $panel['id'] )
+                                            : '';
+
+                                        if ( '' === $panel_id ) {
+                                            continue;
+                                        }
+
+                                        $panel_title = isset( $panel['title'] )
+                                            ? (string) $panel['title']
+                                            : $panel_id;
+
+                                        $is_visible = ! empty(
+                                            $panel['visible']
+                                        );
+
+                                        $input_id = sprintf(
+                                            'goug-dashboard-panel-%s',
+                                            $panel_id
+                                        );
+                                        ?>
+
+                                        <input
+                                            type="hidden"
+                                            name="available_panel_ids[]"
+                                            value="<?php echo esc_attr( $panel_id ); ?>"
+                                        >
+
+                                        <label
+                                            for="<?php echo esc_attr( $input_id ); ?>"
+                                            class="goug-dashboard-panel-visibility__option"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                id="<?php echo esc_attr( $input_id ); ?>"
+                                                name="visible_panels[]"
+                                                value="<?php echo esc_attr( $panel_id ); ?>"
+                                                <?php checked( $is_visible ); ?>
+                                            >
+
+                                            <span>
+                                                <?php echo esc_html( $panel_title ); ?>
+                                            </span>
+                                        </label>
+
+                                    <?php endforeach; ?>
+
+                                </fieldset>
+
+                                <p class="description">
+                                    <?php
+                                    echo esc_html__(
+                                        'Clear a panel to remove it from your dashboard. You can restore it here at any time.',
+                                        'goug-framework'
+                                    );
+                                    ?>
+                                </p>
+
+                            <?php else : ?>
+
+                                <p class="description">
+                                    <?php
+                                    echo esc_html__(
+                                        'No configurable dashboard panels are available.',
+                                        'goug-framework'
+                                    );
+                                    ?>
+                                </p>
+
+                            <?php endif; ?>
+                        </td>
+                    </tr>
 
 				</tbody>
 			</table>

@@ -83,11 +83,58 @@ class Dashboard_Settings_Controller {
 			$_POST['enable_motion']
 		);
 
+        $available_panel_ids = isset( $_POST['available_panel_ids'] )
+            && is_array( $_POST['available_panel_ids'] )
+                ? array_map(
+                    'sanitize_key',
+                    wp_unslash(
+                        $_POST['available_panel_ids']
+                    )
+                )
+                : array();
+
+        $visible_panels = isset( $_POST['visible_panels'] )
+            && is_array( $_POST['visible_panels'] )
+                ? array_map(
+                    'sanitize_key',
+                    wp_unslash(
+                        $_POST['visible_panels']
+                    )
+                )
+                : array();
+
+        $available_panel_ids = array_values(
+            array_unique(
+                array_filter(
+                    $available_panel_ids
+                )
+            )
+        );
+
+        $visible_panels = array_values(
+            array_intersect(
+                array_unique(
+                    array_filter(
+                        $visible_panels
+                    )
+                ),
+                $available_panel_ids
+            )
+        );
+
+        $hidden_panels = array_values(
+            array_diff(
+                $available_panel_ids,
+                $visible_panels
+            )
+        );
+
 		$updated = $this->preferences_service->update_preferences(
 			array(
 				'density'       => $density,
 				'show_greeting' => $show_greeting,
 				'enable_motion' => $enable_motion,
+                'hidden_panels' => $hidden_panels,
 			)
 		);
 

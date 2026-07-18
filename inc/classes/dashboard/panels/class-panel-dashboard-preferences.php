@@ -59,7 +59,9 @@ class Panel_Dashboard_Preferences implements Dashboard_Panel {
 				'priority'   => 30,
 				'class_name' => 'goug-panel--dashboard-preferences',
 				'body_view'  => 'dashboard/components/dashboard-preferences',
-				'body_data'  => $this->get_data(),
+				'body_data' => $this->get_data(
+					$registry
+				),
 				'capability' => 'read',
 				'attributes' => array(
 					'data-panel-id' => 'dashboard-preferences',
@@ -71,9 +73,11 @@ class Panel_Dashboard_Preferences implements Dashboard_Panel {
 	/**
 	 * Return prepared dashboard preference data.
 	 *
+	 * @param Dashboard_Registry $registry Dashboard panel registry.
+	 *
 	 * @return array
 	 */
-	private function get_data() {
+	private function get_data( Dashboard_Registry $registry ) {
 
 		$preferences = $this->preferences_service->get_preferences();
 
@@ -110,6 +114,35 @@ class Panel_Dashboard_Preferences implements Dashboard_Panel {
 			&& is_array( $preferences['hidden_panels'] )
 				? $preferences['hidden_panels']
 				: array();
+
+		$available_panels = array();
+
+		foreach ( $registry->get_panels() as $panel_id => $panel ) {
+
+			if ( ! is_array( $panel ) ) {
+				continue;
+			}
+
+			$panel_id = sanitize_key(
+				$panel_id
+			);
+
+			if ( '' === $panel_id ) {
+				continue;
+			}
+
+			$available_panels[ $panel_id ] = array(
+				'id'      => $panel_id,
+				'title'   => isset( $panel['title'] )
+					? (string) $panel['title']
+					: $panel_id,
+				'visible' => ! in_array(
+					$panel_id,
+					$hidden_panels,
+					true
+				),
+			);
+		}
 
 		$data = array(
 			'density' => array(
@@ -169,6 +202,7 @@ class Panel_Dashboard_Preferences implements Dashboard_Panel {
 					$preferences['enable_motion']
 				),
 				'hidden_panels'    => count( $hidden_panels ),
+				'available_panels' => $available_panels,
 			),
 		);
 
