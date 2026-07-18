@@ -355,88 +355,22 @@ class User_Preferences_Service {
 	}
 
 	/**
-     * Collapse a dashboard panel for a user.
-     *
-     * @param string $panel_id Panel identifier.
-     * @param int    $user_id  Optional user ID. Defaults to current user.
-     *
-     * @return bool
-     */
-	public function collapse_panel(
-		$panel_id,
-		$user_id = 0 ) {
-
-		$panel_id = sanitize_key(
-			$panel_id
-		);
-
-		if ( '' === $panel_id ) {
-			return false;
-		}
+	 * Return collapsed dashboard panels for a user.
+	 *
+	 * @param int $user_id Optional user ID. Defaults to current user.
+	 *
+	 * @return array
+	 */
+	public function get_collapsed_panels( $user_id = 0 ) {
 
 		$collapsed_panels = $this->get_preference(
 			'collapsed_panels',
 			$user_id
 		);
 
-		$collapsed_panels = is_array( $collapsed_panels )
+		return is_array( $collapsed_panels )
 			? $collapsed_panels
 			: array();
-
-		if ( in_array( $panel_id, $collapsed_panels, true ) ) {
-			return true;
-		}
-
-		$collapsed_panels[] = $panel_id;
-
-		return $this->update_preference(
-			'collapsed_panels',
-			$collapsed_panels,
-			$user_id
-		);
-	}
-
-	/**
-     * Expand a previously collapsed dashboard panel.
-     *
-     * @param string $panel_id Panel identifier.
-     * @param int    $user_id  Optional user ID. Defaults to current user.
-     *
-     * @return bool
-     */
-	public function expand_panel(
-		$panel_id,
-		$user_id = 0 ) {
-
-		$panel_id = sanitize_key(
-			$panel_id
-		);
-
-		if ( '' === $panel_id ) {
-			return false;
-		}
-
-		$collapsed_panels = $this->get_preference(
-			'collapsed_panels',
-			$user_id
-		);
-
-		$collapsed_panels = is_array( $collapsed_panels )
-			? $collapsed_panels
-			: array();
-
-		$collapsed_panels = array_values(
-			array_diff(
-				$collapsed_panels,
-				array( $panel_id )
-			)
-		);
-
-		return $this->update_preference(
-			'collapsed_panels',
-			$collapsed_panels,
-			$user_id
-		);
 	}
 
 	/**
@@ -459,18 +393,33 @@ class User_Preferences_Service {
             return false;
         }
 
-		$collapsed_panels = $this->get_preference(
-            'collapsed_panels',
-            $user_id
-        );
+		$collapsed_panels = $this->get_collapsed_panels( $user_id );
 
-        return is_array( $collapsed_panels )
-            && in_array(
-                $panel_id,
-                $collapsed_panels,
-                true
-            );
+		return in_array(
+			$panel_id,
+			$collapsed_panels,
+			true
+		);
     }
+
+	/**
+	 * Set a panel's collapsed state.
+	 *
+	 * @param string $panel_id  Panel identifier.
+	 * @param bool   $collapsed Whether the panel should be collapsed.
+	 * @param int    $user_id   Optional user ID.
+	 *
+	 * @return bool
+	 */
+	public function set_panel_collapsed(
+		$panel_id,
+		$collapsed,
+		$user_id = 0 ) {
+
+		return $collapsed
+			? $this->collapse_panel( $panel_id, $user_id )
+			: $this->expand_panel( $panel_id, $user_id );
+	}
 
 	/**
      * Set the dashboard density for a user.
@@ -601,8 +550,76 @@ class User_Preferences_Service {
 		);
 	}
 
+	/**
+     * Collapse a dashboard panel for a user.
+     *
+     * @param string $panel_id Panel identifier.
+     * @param int    $user_id  Optional user ID. Defaults to current user.
+     *
+     * @return bool
+     */
+	private function collapse_panel(
+		$panel_id,
+		$user_id = 0 ) {
 
+		$panel_id = sanitize_key(
+			$panel_id
+		);
 
+		if ( '' === $panel_id ) {
+			return false;
+		}
+
+		$collapsed_panels = $this->get_collapsed_panels( $user_id );
+
+		if ( in_array( $panel_id, $collapsed_panels, true ) ) {
+			return true;
+		}
+
+		$collapsed_panels[] = $panel_id;
+
+		return $this->update_preference(
+			'collapsed_panels',
+			$collapsed_panels,
+			$user_id
+		);
+	}
+
+	/**
+     * Expand a previously collapsed dashboard panel.
+     *
+     * @param string $panel_id Panel identifier.
+     * @param int    $user_id  Optional user ID. Defaults to current user.
+     *
+     * @return bool
+     */
+	private function expand_panel(
+		$panel_id,
+		$user_id = 0 ) {
+
+		$panel_id = sanitize_key(
+			$panel_id
+		);
+
+		if ( '' === $panel_id ) {
+			return false;
+		}
+
+		$collapsed_panels = $this->get_collapsed_panels( $user_id );
+
+		$collapsed_panels = array_values(
+			array_diff(
+				$collapsed_panels,
+				array( $panel_id )
+			)
+		);
+
+		return $this->update_preference(
+			'collapsed_panels',
+			$collapsed_panels,
+			$user_id
+		);
+	}
 
 	/**
 	 * Return a valid user ID.
