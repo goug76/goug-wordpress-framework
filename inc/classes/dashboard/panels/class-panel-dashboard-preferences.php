@@ -56,7 +56,7 @@ class Panel_Dashboard_Preferences implements Dashboard_Panel {
 				'icon'       => 'dashicons-admin-generic',
 				'row'        => 5,
 				'width'      => 'third',
-				'priority'   => 30,
+				'priority'   => 90,
 				'class_name' => 'goug-panel--dashboard-preferences',
 				'body_view'  => 'dashboard/components/dashboard-preferences',
 				'body_data' => $this->get_data(

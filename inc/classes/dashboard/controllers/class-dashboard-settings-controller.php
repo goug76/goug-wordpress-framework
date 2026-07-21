@@ -51,6 +51,11 @@ class Dashboard_Settings_Controller {
 			'wp_ajax_goug_update_panel_state',
 			array( $this, 'update_panel_state' )
 		);
+
+		add_action(
+			'wp_ajax_goug_update_panel_order',
+			array( $this, 'update_panel_order' )
+		);
 	}
 
 	/**
@@ -228,5 +233,81 @@ class Dashboard_Settings_Controller {
 				'collapsed' => $collapsed,
 			)
 		);
+	}
+
+	/**
+	 * Update the user's dashboard panel order.
+	 *
+	 * @return void
+	 */
+	public function update_panel_order() {
+
+		if ( ! current_user_can( 'read' ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __(
+						'You do not have permission to update dashboard preferences.',
+						'goug-framework'
+					),
+				),
+				403
+			);
+		}
+
+		check_ajax_referer(
+			'goug_dashboard',
+			'_ajax_nonce'
+		);
+
+		$order = isset( $_POST['order'] )
+			? json_decode(
+				wp_unslash( $_POST['order'] ),
+				true
+			)
+			: array();
+
+		if ( ! is_array( $order ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __(
+						'Invalid panel order.',
+						'goug-framework'
+					),
+				),
+				400
+			);
+		}
+
+		$order = array_values(
+			array_filter(
+				array_map(
+					'sanitize_key',
+					$order
+				)
+			)
+		);
+
+		$updated = $this->preferences_service->set_panel_order(
+			$order
+		);
+
+		if ( ! $updated ) {
+			wp_send_json_error(
+				array(
+					'message' => __(
+						'The panel order could not be saved.',
+						'goug-framework'
+					),
+				),
+				500
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'order' => $order,
+			)
+		);
+
 	}
 }

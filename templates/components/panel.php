@@ -131,6 +131,15 @@ $attribute_string = implode( ' ', $attribute_parts );
 				? \GOUG\Inc\Helpers\get_icon_url( $icon_svg )
 				: '';
 			?>
+			
+			<?php
+			echo \GOUG\Inc\Helpers\get_drag_handle_markup(
+				__(
+					'Reorder panel',
+					'goug-framework'
+				)
+			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			?>
 
 			<?php if (
 				'' !== $panel_svg_url ||

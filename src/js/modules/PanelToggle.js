@@ -1,12 +1,18 @@
+import DashboardApi from '../services/DashboardApi';
+
 export default class PanelToggle {
 	constructor() {
 		this.buttons = document.querySelectorAll(
 			'.goug-panel__toggle'
 		);
 
-		if (!this.buttons.length) {
-			return;
-		}
+        this.headers = document.querySelectorAll(
+            '.goug-panel__header'
+        );
+
+		if (!this.buttons.length && !this.headers.length) {
+            return;
+        }
 
 		this.events();
 	}
@@ -15,13 +21,20 @@ export default class PanelToggle {
 	 * Register module event listeners.
 	 */
 	events() {
-		this.buttons.forEach((button) => {
-			button.addEventListener(
-				'click',
-				this.onToggleClick.bind(this)
-			);
-		});
-	}
+        this.buttons.forEach((button) => {
+            button.addEventListener(
+                'click',
+                this.onToggleClick.bind(this)
+            );
+        });
+
+        this.headers.forEach((header) => {
+            header.addEventListener(
+                'click',
+                this.onHeaderClick.bind(this)
+            );
+        });
+    }
 
 	/**
 	 * Handle a panel toggle click.
@@ -29,6 +42,8 @@ export default class PanelToggle {
 	 * @param {MouseEvent} event
 	 */
 	onToggleClick(event) {
+        event.stopPropagation();
+
 		const button = event.currentTarget;
 
 		const panel = button.closest('.goug-panel');
@@ -37,30 +52,204 @@ export default class PanelToggle {
 			return;
 		}
 
-		this.toggle(panel, button);
+		if (panel.classList.contains('is-collapsed')) {
+
+            this.expand(panel, button);
+
+        } else {
+
+            this.collapse(panel, button);
+
+        }
 	}
 
-	/**
-	 * Toggle a panel.
-	 *
-	 * @param {HTMLElement} panel
-	 * @param {HTMLButtonElement} button
-	 */
-	toggle(panel, button) {
-        const collapsed =
-            panel.classList.toggle('is-collapsed');
-        
-        button.setAttribute(
-            'aria-expanded',
-            collapsed ? 'false' : 'true'
+    /**
+     * Handle a panel header click.
+     *
+     * @param {MouseEvent} event
+     */
+    onHeaderClick(event) {
+        if ( event.target.closest( '.goug-drag-handle' ) ) {
+            return;
+        }
+        const header = event.currentTarget;
+
+        const panel = header.closest('.goug-panel');
+
+        if (!panel) {
+            return;
+        }
+
+        const button = panel.querySelector(
+            '.goug-panel__toggle'
         );
 
-        panel.dataset.collapsed =
-	        collapsed ? 'true' : 'false';
+        if (!button) {
+            return;
+        }
 
-        this.savePreference(
-            panel,
-            collapsed
+        if (panel.classList.contains('is-collapsed')) {
+
+            this.expand(panel, button);
+
+        } else {
+
+            this.collapse(panel, button);
+
+        }
+    }
+
+    /**
+     * Collapse a panel.
+     *
+     * @param {HTMLElement} panel
+     * @param {HTMLButtonElement} button
+     */
+    collapse(panel, button) {
+
+        const body = panel.querySelector(
+            '.goug-panel__body'
+        );
+
+        if (!body) {
+            return;
+        }
+
+        const height = body.offsetHeight;
+
+        body.style.height = `${height}px`;
+
+        // Force a reflow so the browser acknowledges the fixed height.
+        body.offsetHeight;
+
+        panel.classList.add(
+            'is-transitioning',
+            'is-collapsing'
+        );
+
+        button.setAttribute(
+            'aria-expanded',
+            'false'
+        );
+
+        panel.dataset.collapsed = 'true';
+
+        requestAnimationFrame(() => {
+            body.style.height = '0px';
+        });
+
+        const onTransitionEnd = (event) => {
+
+            if (
+                event.target !== body ||
+                event.propertyName !== 'height'
+            ) {
+                return;
+            }
+
+            body.removeEventListener(
+                'transitionend',
+                onTransitionEnd
+            );
+
+            body.style.height = '';
+
+            panel.classList.remove(
+                'is-transitioning',
+                'is-collapsing'
+            );
+
+            panel.classList.add(
+                'is-collapsed'
+            );
+
+            this.savePreference(
+                panel,
+                true
+            );
+        };
+
+        body.addEventListener(
+            'transitionend',
+            onTransitionEnd
+        );
+    }
+
+    /**
+     * Expand a panel.
+     *
+     * @param {HTMLElement} panel
+     * @param {HTMLButtonElement} button
+     */
+    expand(panel, button) {
+
+        const body = panel.querySelector(
+            '.goug-panel__body'
+        );
+
+        if (!body) {
+            return;
+        }
+
+        panel.classList.remove(
+            'is-collapsed'
+        );
+
+        panel.classList.add(
+            'is-transitioning',
+            'is-expanding'
+        );
+
+        // Start collapsed.
+        body.style.height = '0px';
+
+        // Measure the natural height.
+        const height = body.scrollHeight;
+
+        // Force layout.
+        body.offsetHeight;
+
+        button.setAttribute(
+            'aria-expanded',
+            'true'
+        );
+
+        panel.dataset.collapsed = 'false';
+
+        requestAnimationFrame(() => {
+            body.style.height = `${height}px`;
+        });
+
+        const onTransitionEnd = (event) => {
+
+            if (
+                event.target !== body ||
+                event.propertyName !== 'height'
+            ) {
+                return;
+            }
+
+            body.removeEventListener(
+                'transitionend',
+                onTransitionEnd
+            );
+
+            body.style.height = '';
+
+            panel.classList.remove(
+                'is-transitioning',
+                'is-expanding'
+            );
+
+            this.savePreference(
+                panel,
+                false
+            );
+        };
+
+        body.addEventListener(
+            'transitionend',
+            onTransitionEnd
         );
     }
 
@@ -72,40 +261,20 @@ export default class PanelToggle {
      */
     async savePreference(panel, collapsed) {
 
-        if (!window.ajaxurl) {
-            return;
-        }
-
-        const formData = new FormData();
-
-        formData.append(
-            'action',
-            'goug_update_panel_state'
+        DashboardApi.post(
+            'goug_update_panel_state',
+            {
+                panel_id: panel.dataset.panelId,
+                collapsed: '1',
+            }
         );
 
-        formData.append(
-            'panel_id',
-            panel.dataset.panelId
+        DashboardApi.post(
+            'goug_update_panel_state',
+            {
+                panel_id: panel.dataset.panelId,
+                collapsed: '0',
+            }
         );
-
-        formData.append(
-            'collapsed',
-            collapsed ? '1' : '0'
-        );
-
-        formData.append(
-            '_ajax_nonce',
-            gougDashboard.nonce
-        );
-
-        try {
-            await fetch(window.ajaxurl, {
-                method: 'POST',
-                credentials: 'same-origin',
-                body: formData,
-            });
-        } catch (error) {
-            console.error(error);
-        }
     }
 }

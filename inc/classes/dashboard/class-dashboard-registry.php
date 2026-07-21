@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * - Normalize panel definitions.
  * - Validate panel configuration.
  * - Filter unavailable panels.
- * - Sort panels by row and priority.
+ * - Sort panels by priority.
  *
  * The registry stores metadata only.
  * It does not collect dashboard data or render HTML.
@@ -45,14 +45,16 @@ class Dashboard_Registry {
      *
      * Optional:
      *
-     * - icon
-     * - icon_svg
-     * - priority
-     * - class_name
-     * - body_data
-     * - capability
-     * - visible
-     * - attributes
+	 *  - icon
+	 *  - icon_svg
+	 *  - width
+	 *  - priority
+	 *  - class_name
+	 *  - body_data
+	 *  - capability
+	 *  - profiles
+	 *  - visible
+	 *  - attributes
      *
      * @param array $panel Panel definition.
      *
@@ -112,7 +114,7 @@ class Dashboard_Registry {
 	 * Return all visible, accessible panels.
 	 *
 	 * Panels are filtered by capability, adjusted for the current user's
-	 * default layout profile, and sorted by row, priority, and ID.
+	 * default layout profile, and sorted by priority and ID.
 	 *
 	 * @return array
 	 */
@@ -130,18 +132,6 @@ class Dashboard_Registry {
 		uasort(
 			$panels,
 			static function ( $first, $second ) {
-
-				$first_row = isset( $first['row'] )
-					? (int) $first['row']
-					: 100;
-
-				$second_row = isset( $second['row'] )
-					? (int) $second['row']
-					: 100;
-
-				if ( $first_row !== $second_row ) {
-					return $first_row <=> $second_row;
-				}
 
 				$first_priority = isset( $first['priority'] )
 					? (int) $first['priority']
@@ -216,47 +206,39 @@ class Dashboard_Registry {
 
 			'content' => array(
 				'at-a-glance' => array(
-					'row'      => 1,
 					'width'    => 'half',
 					'priority' => 10,
 				),
 				'quick-actions' => array(
-					'row'      => 1,
 					'width'    => 'half',
 					'priority' => 20,
 				),
 				'recent-activity' => array(
-					'row'      => 2,
 					'width'    => 'full',
-					'priority' => 10,
+					'priority' => 30,
 				),
 				'quick-draft' => array(
-					'row'      => 3,
 					'width'    => 'two-thirds',
-					'priority' => 10,
+					'priority' => 40,
 				),
 			),
 
 			'editorial' => array(
 				'at-a-glance' => array(
-					'row'      => 1,
 					'width'    => 'half',
 					'priority' => 10,
 				),
 				'quick-actions' => array(
-					'row'      => 1,
 					'width'    => 'half',
 					'priority' => 20,
 				),
 				'recent-activity' => array(
-					'row'      => 2,
 					'width'    => 'full',
-					'priority' => 10,
+					'priority' => 30,
 				),
 				'quick-draft' => array(
-					'row'      => 3,
 					'width'    => 'two-thirds',
-					'priority' => 10,
+					'priority' => 40,
 				),
 			),
 
@@ -328,8 +310,8 @@ class Dashboard_Registry {
 	/**
 	 * Apply layout metadata to one panel.
 	 *
-	 * Updates the panel metadata, semantic width class, and row attribute
-	 * together so the rendered panel remains internally consistent.
+	 * Updates the panel priority, semantic width metadata, and width class
+	 * so the rendered panel remains internally consistent.
 	 *
 	 * @param array $panel  Normalized panel definition.
 	 * @param array $layout Layout override.
@@ -339,13 +321,6 @@ class Dashboard_Registry {
 	private function apply_panel_layout(
 		$panel,
 		$layout ) {
-
-		if ( isset( $layout['row'] ) ) {
-			$panel['row'] = max(
-				1,
-				(int) $layout['row']
-			);
-		}
 
 		if ( isset( $layout['priority'] ) ) {
 			$panel['priority'] = max(
@@ -366,7 +341,6 @@ class Dashboard_Registry {
 			);
 		}
 
-		$panel['attributes']['data-panel-row'] = (string) $panel['row'];
 		$panel['attributes']['data-layout-profile'] =
 			$this->get_layout_profile();
 
@@ -388,7 +362,6 @@ class Dashboard_Registry {
 			'icon'       => '',
 			'icon_svg'   => '',
 			'width'      => 'full',
-			'row'        => 100,
 			'priority'   => 100,
 			'class_name' => '',
 			'body_view'  => '',
@@ -414,14 +387,11 @@ class Dashboard_Registry {
 			$panel['width']
 		);
 
-		$panel['row'] = max(
-			1,
-			(int) $panel['row']
-		);
 		$panel['priority'] = max(
 			0,
 			(int) $panel['priority']
 		);
+
 		$panel['class_name'] = (string) $panel['class_name'];
 		$panel['body_view']  = trim( (string) $panel['body_view'] );
 		$panel['body_data']  = is_array( $panel['body_data'] )
@@ -450,8 +420,6 @@ class Dashboard_Registry {
 		) {
 			return array();
 		}
-
-		$panel['attributes']['data-panel-row'] = (string) $panel['row'];
 
 		$panel['class_name'] = $this->replace_width_class(
 			$panel['class_name'],

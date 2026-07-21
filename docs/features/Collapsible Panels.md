@@ -4,7 +4,7 @@
 
 **Milestone:** v0.6.0
 
-**Status:** Design
+**Status:** Done
 
 **Priority:** High
 

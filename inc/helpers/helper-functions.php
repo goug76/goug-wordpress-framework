@@ -75,3 +75,50 @@ function get_icon_url( $filename ) {
 		. '/assets/icons/'
 		. rawurlencode( $filename );
 }
+
+/**
+ * Return reusable drag-handle markup.
+ *
+ * @param string $label Accessible control label.
+ *
+ * @return string
+ */
+function get_drag_handle_markup(
+	$label = ''
+) {
+
+	if ( '' === $label ) {
+		$label = __(
+			'Reorder item',
+			'goug-framework'
+		);
+	}
+
+	ob_start();
+	?>
+
+	<span
+		class="goug-drag-handle"
+		role="button"
+		tabindex="0"
+		aria-label="<?php echo esc_attr( $label ); ?>"
+	>
+		<span
+			class="goug-drag-handle__grip"
+			aria-hidden="true"
+		>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+		</span>
+	</span>
+
+	<?php
+
+	return trim(
+		ob_get_clean()
+	);
+}

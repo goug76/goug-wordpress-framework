@@ -102,7 +102,7 @@ class Dashboard_Data {
 	 * Default dashboard panel modules.
 	 *
 	 * Panels are stored in their default registration order. The
-	 * registry applies row and priority sorting before rendering.
+	 * registry applies priority sorting before rendering.
 	 *
 	 * @var Dashboard_Panel[]
 	 */
@@ -341,8 +341,8 @@ public function __construct(
 	 * Register the default dashboard panels.
 	 *
 	 * Each panel is registered once per dashboard request. The registry
-	 * handles availability, capability checks, row ordering, and panel
-	 * priority.
+	 * handles availability, capability checks, layout profiles, and
+	 * panel priority.
 	 *
 	 * @return void
 	 */

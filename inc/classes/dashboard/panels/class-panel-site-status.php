@@ -109,7 +109,6 @@ class Panel_Site_Status implements Dashboard_Panel {
 				'id'         => 'site-status',
 				'title'      => $site_status['title'],
 				'icon'       => 'dashicons-performance',
-				'row'        => 1,
 				'width'      => 'full',
 				'priority'   => 10,
 				'class_name' => 'goug-panel--status',

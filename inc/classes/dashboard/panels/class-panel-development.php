@@ -55,9 +55,8 @@ class Panel_Development implements Dashboard_Panel {
 				'id'         => 'development',
 				'title'      => __( 'Development', 'goug-framework' ),
 				'icon'       => 'dashicons-editor-code',
-				'row'      	 => 5,
 				'width'    	 => 'two-thirds',
-				'priority'	 => 10,
+				'priority'	 => 80,
 				'class_name' => 'goug-panel--development',
 				'body_view'  => 'dashboard/components/development',
 				'body_data'  => array(

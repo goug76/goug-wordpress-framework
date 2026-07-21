@@ -47,7 +47,7 @@ class Dashboard_Settings {
 
 		$registry->register_setting(
 			array(
-				'id'          => 'dashboard.panel_order',
+				'id'          => 'dashboard.panel_layout',
 				'section'     => 'dashboard',
 				'label'       => __(
 					'Panel Layout',

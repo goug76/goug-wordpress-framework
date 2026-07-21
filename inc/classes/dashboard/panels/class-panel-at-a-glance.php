@@ -54,9 +54,8 @@ class Panel_At_A_Glance implements Dashboard_Panel {
 				'id'         => 'at-a-glance',
 				'title'      => __( 'At a Glance', 'goug-framework' ),
 				'icon'       => 'dashicons-visibility',
-				'row'      	 => 2,
 				'width'	     => 'third',
-				'priority'	 => 20,
+				'priority'	 => 30,
 				'class_name' => 'goug-panel--at-a-glance',
 				'body_view'  => 'dashboard/components/at-a-glance',
 				'body_data'  => array(

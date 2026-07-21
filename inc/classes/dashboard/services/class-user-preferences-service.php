@@ -478,6 +478,7 @@ class User_Preferences_Service {
 		);
 	}
 
+
 	/**
 	 * Return dashboard-scoped settings using short preference keys.
 	 *

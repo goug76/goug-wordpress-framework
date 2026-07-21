@@ -25,16 +25,24 @@
 	container-name: dashboard-panel;
 }
 
+.goug-panel.is-collapsed {
+	height: auto;
+	min-height: 0;
+	align-self: start;
+}
+
 .goug-panel__header {
 	position: relative;
 	display: flex;
 	align-items: center;
+	cursor: pointer;
 	gap: 10px;
 	min-height: 52px;
 	padding: 15px var(--goug-space-panel) 15px
 		calc(var(--goug-space-panel) + 8px);
 
 	border-bottom: 1px solid rgba(35, 219, 229, 0.13);
+	
 
 	&::before {
 		position: absolute;
@@ -57,10 +65,15 @@
 	}
 }
 
+.goug-panel__header:hover {
+	background-color: rgba(255, 255, 255, 0.04);
+}
+
 .goug-panel__icon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	margin: 0 .5rem;
 
 	width: 18px;
 	height: 18px;
@@ -89,10 +102,74 @@
 	flex-direction: column;
 	min-width: 0;
 	padding: var(--goug-space-panel);
+	overflow: hidden;
+
+	opacity: 1;
+	transform: translateY(0);
+
+	transition:
+		height 0.22s ease,
+		opacity 0.18s ease,
+		transform 0.22s ease,
+		padding-top 0.22s ease,
+		padding-bottom 0.22s ease;
+}
+
+/*
+ * Temporary animation state used while opening or closing.
+ * JavaScript controls the body's inline height.
+ */
+.goug-panel.is-transitioning .goug-panel__body {
+	will-change:
+		height,
+		opacity,
+		transform;
+}
+
+/*
+ * Visual destination while closing and the starting point while opening.
+ */
+.goug-panel.is-collapsing .goug-panel__body,
+.goug-panel.is-expanding .goug-panel__body {
+	opacity: 0;
+	transform: translateY(-6px);
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+/*
+ * Final resting state. The body is removed only after the transition ends.
+ */
+.goug-panel.is-collapsed .goug-panel__body {
+	display: none;
+}
+
+.goug-panel__toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: auto;
+	padding: 0.375rem;
+	color: inherit;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	cursor: pointer;
+	transition:
+		transform 0.2s ease,
+		opacity 0.2s ease;
 }
 
 .goug-panel.is-collapsed .goug-panel__body {
-    display:none;
+	opacity: 0;
+	transform: translateY(-8px);
+	pointer-events: none;
+}
+
+.goug-panel__toggle:hover,
+.goug-panel__toggle:focus-visible {
+	background: transparent;
+	opacity: 0.75;
 }
 
 .goug-panel__toggle .dashicons {
@@ -105,4 +182,72 @@
 
 	transform: rotate(-90deg);
 
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.goug-panel__body,
+	.goug-panel__toggle,
+	.goug-panel__toggle .dashicons {
+		transition: none;
+	}
+}
+
+.goug-drag-handle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: .5rem;
+	width: 32px;
+	height: 32px;
+	flex: 0 0 32px;
+	cursor: grab;
+	opacity: .45;
+	color: var(--goug-color-primary);
+	border-radius: 4px;
+	transition:
+		opacity 150ms ease,
+		background-color 150ms ease;
+}
+
+.goug-drag-handle:hover,
+.goug-drag-handle:focus-visible {
+	opacity: 1;
+	color: var(--goug-color-primary);
+}
+
+.goug-drag-handle:active {
+	cursor: grabbing;
+	opacity: 1;
+}
+
+.goug-drag-handle__grip {
+	display: grid;
+	grid-template-columns: repeat(2, 4px);
+	grid-template-rows: repeat(3, 4px);
+	gap: 3px;
+	pointer-events: none;
+}
+
+.goug-drag-handle__grip span {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+.goug-panel--ghost {
+	opacity: 0.35;
+}
+
+.goug-panel--chosen {
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.goug-panel--dragging {
+	cursor: grabbing;
+}
+
+.goug-panel--dragging .goug-drag-handle {
+	cursor: grabbing;
+	opacity: 1;
 }

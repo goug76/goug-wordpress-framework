@@ -33,7 +33,6 @@ class Panel_Welcome implements Dashboard_Panel {
 				'id'         => 'welcome',
 				'title'      => __( 'Welcome', 'goug-framework' ),
 				'icon'       => 'dashicons-smiley',
-				'row'        => 1,
 				'width'      => 'two-thirds',
 				'priority'   => 10,
 				'class_name' => 'goug-panel--welcome',

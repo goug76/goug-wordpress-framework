@@ -55,9 +55,8 @@ class Panel_Storage_Usage implements Dashboard_Panel {
 				'id'         => 'storage-usage',
 				'title'      => __( 'Storage Usage', 'goug-framework' ),
 				'icon'       => 'dashicons-database',
-				'row'      	 => 2,
 				'width'    	 => 'third',
-				'priority' 	 => 30,
+				'priority' 	 => 40,
 				'class_name' => 'goug-panel--storage-usage',
 				'body_view'  => 'dashboard/components/storage-usage',
 				'body_data'  => array(

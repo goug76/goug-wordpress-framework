@@ -54,9 +54,8 @@ class Panel_Site_Health implements Dashboard_Panel {
 				'id'         => 'site-health',
 				'title'      => __( 'Site Health', 'goug-framework' ),
 				'icon'       => 'dashicons-heart',
-				'row'      	 => 2,
 				'width'    	 => 'third',
-				'priority' 	 => 10,
+				'priority' 	 => 20,
 				'class_name' => 'goug-panel--site-health',
 				'body_view'  => 'dashboard/components/site-health',
 				'body_data'  => array(
