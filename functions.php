@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
  * Only edit this file if you have direct access to it on your server (to fix errors if they happen).
  */
 
-$files = array( 
+/* $files = array( 
     '/inc/helpers/autoloader.php',
     '/inc/helpers/helper-functions.php'
 );
@@ -26,4 +26,4 @@ if ( ! defined( 'GOUG_DIR_PATH' ) ) {
 
 add_action('init', function() {
     flush_rewrite_rules();
-});
+}); */
