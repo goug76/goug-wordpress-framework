@@ -1,4 +1,8 @@
-# GOUG Framework Constitution
+# GOUG Framework
+
+> **Extend WordPress. Don't replace it.**
+
+A lightweight architectural framework for building modern, maintainable WordPress applications.
 
 > **Version:** Draft 1.0  
 > **Status:** Living Design Specification
@@ -310,3 +314,5 @@ A healthy framework enables growth without increasing complexity.
 > Never compete with WordPress.**
 
 The GOUG Framework exists to make WordPress development cleaner, more consistent, and more enjoyable—for both developers and users.
+
+> Good architecture is not measured by how much code lives in Core. It's measured by how little Core needs to change as the framework grows.
