@@ -1,0 +1,12 @@
+{
+    "name": "goug/framework",
+    "description": "A lightweight modular framework for building modern WordPress websites.",
+    "type": "wordpress-theme",
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Goug\\Framework\\": "src/"
+        }
+    },
+    "require": {}
+}
