@@ -6,6 +6,8 @@ namespace Goug\Framework\Core\Lifecycle;
 
 defined('ABSPATH') || exit;
 
+use Goug\Framework\Core\Runtime;
+
 /**
  * Coordinates the GOUG Framework lifecycle.
  *
@@ -16,7 +18,7 @@ defined('ABSPATH') || exit;
 final class Lifecycle
 {
     public function __construct( private readonly Runtime $runtime ) {
-        
+
     }
 
     /**
