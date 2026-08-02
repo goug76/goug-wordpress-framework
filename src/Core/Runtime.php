@@ -7,6 +7,8 @@ namespace Goug\Framework\Core;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Configuration\Configuration;
+use Goug\Framework\Core\Registries\ModuleRegistry;
+use RuntimeException;
 
 /**
  * Represents the running state of GOUG Framework.
@@ -20,6 +22,11 @@ final class Runtime
      * Framework installation configuration.
      */
     private Configuration $configuration;
+
+    /**
+     * Registered framework modules.
+     */
+    private ?ModuleRegistry $moduleRegistry = null;
 
     /**
      * Create the framework runtime.
@@ -36,5 +43,34 @@ final class Runtime
     public function configuration(): Configuration
     {
         return $this->configuration;
+    }
+
+    /**
+     * Store the module registry.
+     */
+    public function setModuleRegistry(
+        ModuleRegistry $moduleRegistry
+    ): void {
+        if ($this->moduleRegistry !== null) {
+            throw new RuntimeException(
+                'The module registry has already been initialized.'
+            );
+        }
+
+        $this->moduleRegistry = $moduleRegistry;
+    }
+
+    /**
+     * Return the module registry.
+     */
+    public function moduleRegistry(): ModuleRegistry
+    {
+        if ($this->moduleRegistry === null) {
+            throw new RuntimeException(
+                'The module registry has not been initialized.'
+            );
+        }
+
+        return $this->moduleRegistry;
     }
 }

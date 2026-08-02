@@ -6,6 +6,7 @@ namespace Goug\Framework\Core\Lifecycle;
 
 defined('ABSPATH') || exit;
 
+use Goug\Framework\Core\Registries\ModuleRegistry;
 use Goug\Framework\Core\Runtime;
 
 /**
@@ -47,7 +48,9 @@ final class Lifecycle
      */
     private function initialize(): void
     {
-        // Core initialization logic will be introduced when required.
+        $this->runtime->setModuleRegistry(
+            new ModuleRegistry()
+        );
     }
 
     /**
