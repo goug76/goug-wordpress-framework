@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Goug\Framework\Core\Bootstrap;
+namespace Goug\Framework\Core;
 
 defined('ABSPATH') || exit;
 

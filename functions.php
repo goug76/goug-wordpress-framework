@@ -12,4 +12,4 @@ if (! file_exists($autoload)) {
 
 require_once $autoload;
 
-\Goug\Framework\Core\Bootstrap\Framework::boot();
+\Goug\Framework\Core\Framework::boot();
