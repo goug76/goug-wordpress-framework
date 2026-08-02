@@ -34,6 +34,11 @@ final class Runtime
     private ?ModuleLoader $moduleLoader = null;
 
     /**
+     * Discovery framework modules.
+     */
+    private ?ModuleDiscovery $moduleDiscovery = null;
+
+    /**
      * Create the framework runtime.
      */
     public function __construct(
@@ -106,5 +111,34 @@ final class Runtime
         }
 
         return $this->moduleLoader;
+    }
+
+    /**
+     * Store the module discovery service.
+     */
+    public function setModuleDiscovery(
+        ModuleDiscovery $moduleDiscovery
+    ): void {
+        if ($this->moduleDiscovery !== null) {
+            throw new \RuntimeException(
+                'Module discovery has already been initialized.'
+            );
+        }
+
+        $this->moduleDiscovery = $moduleDiscovery;
+    }
+
+    /**
+     * Return the module discovery service.
+     */
+    public function moduleDiscovery(): ModuleDiscovery
+    {
+        if ($this->moduleDiscovery === null) {
+            throw new \RuntimeException(
+                'Module discovery has not been initialized.'
+            );
+        }
+
+        return $this->moduleDiscovery;
     }
 }

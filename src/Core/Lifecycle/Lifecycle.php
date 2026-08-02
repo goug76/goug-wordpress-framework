@@ -7,7 +7,7 @@ namespace Goug\Framework\Core\Lifecycle;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Registries\ModuleRegistry;
-use Goug\Framework\Modules\Dashboard\Module as DashboardModule;
+use Goug\Framework\Core\ModuleDiscovery;
 use Goug\Framework\Core\ModuleLoader;
 use Goug\Framework\Core\Runtime;
 
@@ -54,6 +54,10 @@ final class Lifecycle
             new ModuleRegistry()
         );
 
+        $this->runtime->setModuleDiscovery(
+            new ModuleDiscovery()
+        );
+
         $this->runtime->setModuleLoader(
             new ModuleLoader()
         );
@@ -64,11 +68,25 @@ final class Lifecycle
      */
     private function discoverModules(): void
     {
-        $this->runtime
-            ->moduleRegistry()
-            ->register(
-                new DashboardModule()
+        $modules = $this->runtime
+            ->moduleDiscovery()
+            ->discover(
+                $this->runtime->configuration()
             );
+
+        $registry = $this->runtime->moduleRegistry();
+
+        foreach ($modules as $module) {
+            $registry->register(
+                $module
+            );
+        }
+
+        do_action(
+            'goug_framework_modules_discovered',
+            $registry,
+            $this->runtime
+        );
     }
 
     /**
