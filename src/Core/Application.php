@@ -6,6 +6,7 @@ namespace Goug\Framework\Core;
 
 defined('ABSPATH') || exit;
 
+use Goug\Framework\Core\Configuration\Configuration;
 use Goug\Framework\Core\Lifecycle\Lifecycle;
 
 /**
@@ -13,11 +14,20 @@ use Goug\Framework\Core\Lifecycle\Lifecycle;
  */
 final class Application
 {
+    /**
+     * Current framework runtime.
+     */
     private Runtime $runtime;
 
-    public function __construct()
-    {
-        $this->runtime = new Runtime();
+    /**
+     * Create the framework application.
+     */
+    public function __construct(
+        Configuration $configuration
+    ) {
+        $this->runtime = new Runtime(
+            $configuration
+        );
     }
 
     /**
@@ -25,13 +35,15 @@ final class Application
      */
     public function boot(): void
     {
-        $lifecycle = new Lifecycle($this->runtime);
+        $lifecycle = new Lifecycle(
+            $this->runtime
+        );
 
         $lifecycle->run();
     }
 
     /**
-     * Get the current runtime.
+     * Return the current framework runtime.
      */
     public function runtime(): Runtime
     {

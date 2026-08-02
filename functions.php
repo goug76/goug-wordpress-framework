@@ -12,4 +12,7 @@ if (! file_exists($autoload)) {
 
 require_once $autoload;
 
-\Goug\Framework\Core\Framework::boot();
+\Goug\Framework\Core\Framework::boot(
+    __DIR__,
+    get_stylesheet_directory_uri()
+);
