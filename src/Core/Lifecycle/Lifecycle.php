@@ -7,6 +7,7 @@ namespace Goug\Framework\Core\Lifecycle;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Registries\ModuleRegistry;
+use Goug\Framework\Modules\Dashboard\Module as DashboardModule;
 use Goug\Framework\Core\Runtime;
 
 /**
@@ -58,7 +59,11 @@ final class Lifecycle
      */
     private function discoverModules(): void
     {
-        // Module discovery logic will be introduced when required.
+        $this->runtime
+            ->moduleRegistry()
+            ->register(
+                new DashboardModule()
+            );
     }
 
     /**
@@ -66,7 +71,20 @@ final class Lifecycle
      */
     private function registerModules(): void
     {
-        // Module registration logic will be introduced when required.
+        foreach (
+            $this->runtime->moduleRegistry()->all()
+            as $module
+        ) {
+            $module->register(
+                $this->runtime
+            );
+        }
+
+        do_action(
+            'goug_framework_modules_registered',
+            $this->runtime->moduleRegistry(),
+            $this->runtime
+        );
     }
 
     /**
@@ -74,7 +92,20 @@ final class Lifecycle
      */
     private function bootModules(): void
     {
-        // Module boot logic will be introduced when required.
+        foreach (
+            $this->runtime->moduleRegistry()->all()
+            as $module
+        ) {
+            $module->boot(
+                $this->runtime
+            );
+        }
+
+        do_action(
+            'goug_framework_modules_booted',
+            $this->runtime->moduleRegistry(),
+            $this->runtime
+        );
     }
 
     /**
@@ -82,6 +113,15 @@ final class Lifecycle
      */
     private function ready(): void
     {
-        // Framework-ready behavior will be introduced when required.
+        /**
+         * Fires after GOUG Framework Core and every discovered module
+         * have completed registration and booting.
+         *
+         * @param Runtime $runtime Current framework runtime.
+         */
+        do_action(
+            'goug_framework_ready',
+            $this->runtime
+        );
     }
 }
