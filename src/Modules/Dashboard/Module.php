@@ -7,14 +7,12 @@ namespace Goug\Framework\Modules\Dashboard;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Configuration\ModuleMetadata;
+use Goug\Framework\Core\Contracts\ProviderContract;
 use Goug\Framework\Core\Contracts\ModuleContract;
-use Goug\Framework\Core\Runtime;
+use Goug\Framework\Modules\Dashboard\Providers\DashboardProvider;
 
 /**
- * Provides the GOUG Dashboard module.
- *
- * The module coordinates Dashboard responsibilities but does not
- * implement individual Dashboard features directly.
+ * Describes the GOUG Dashboard module.
  */
 final class Module implements ModuleContract
 {
@@ -45,29 +43,14 @@ final class Module implements ModuleContract
     }
 
     /**
-     * Register Dashboard definitions and infrastructure.
+     * Return the Dashboard provider classes.
+     *
+     * @return list<class-string<ProviderContract>>
      */
-    public function register(Runtime $runtime): void
+    public function providers(): array
     {
-        // Dashboard registration will be introduced when required.
-    }
-
-    /**
-     * Activate Dashboard runtime behavior.
-     */
-    public function boot(Runtime $runtime): void
-    {
-        if (
-            defined('WP_DEBUG') &&
-            WP_DEBUG
-        ) {
-            error_log(
-                sprintf(
-                    'GOUG module booted: %s %s',
-                    $this->metadata()->name(),
-                    $this->metadata()->version()
-                )
-            );
-        }
+        return [
+            DashboardProvider::class,
+        ];
     }
 }

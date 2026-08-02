@@ -8,6 +8,7 @@ defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Registries\ModuleRegistry;
 use Goug\Framework\Modules\Dashboard\Module as DashboardModule;
+use Goug\Framework\Core\ModuleLoader;
 use Goug\Framework\Core\Runtime;
 
 /**
@@ -52,6 +53,10 @@ final class Lifecycle
         $this->runtime->setModuleRegistry(
             new ModuleRegistry()
         );
+
+        $this->runtime->setModuleLoader(
+            new ModuleLoader()
+        );
     }
 
     /**
@@ -71,11 +76,14 @@ final class Lifecycle
      */
     private function registerModules(): void
     {
+        $loader = $this->runtime->moduleLoader();
+
         foreach (
             $this->runtime->moduleRegistry()->all()
             as $module
         ) {
-            $module->register(
+            $loader->register(
+                $module,
                 $this->runtime
             );
         }
@@ -92,11 +100,14 @@ final class Lifecycle
      */
     private function bootModules(): void
     {
+        $loader = $this->runtime->moduleLoader();
+
         foreach (
             $this->runtime->moduleRegistry()->all()
             as $module
         ) {
-            $module->boot(
+            $loader->boot(
+                $module,
                 $this->runtime
             );
         }

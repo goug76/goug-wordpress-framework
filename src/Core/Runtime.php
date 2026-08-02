@@ -29,6 +29,11 @@ final class Runtime
     private ?ModuleRegistry $moduleRegistry = null;
 
     /**
+     * Load framework modules.
+     */
+    private ?ModuleLoader $moduleLoader = null;
+
+    /**
      * Create the framework runtime.
      */
     public function __construct(
@@ -72,5 +77,34 @@ final class Runtime
         }
 
         return $this->moduleRegistry;
+    }
+
+    /**
+     * Store the module loader.
+     */
+    public function setModuleLoader(
+        ModuleLoader $moduleLoader
+    ): void {
+        if ($this->moduleLoader !== null) {
+            throw new \RuntimeException(
+                'The module loader has already been initialized.'
+            );
+        }
+
+        $this->moduleLoader = $moduleLoader;
+    }
+
+    /**
+     * Return the module loader.
+     */
+    public function moduleLoader(): ModuleLoader
+    {
+        if ($this->moduleLoader === null) {
+            throw new \RuntimeException(
+                'The module loader has not been initialized.'
+            );
+        }
+
+        return $this->moduleLoader;
     }
 }

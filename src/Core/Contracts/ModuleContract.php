@@ -7,10 +7,9 @@ namespace Goug\Framework\Core\Contracts;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Configuration\ModuleMetadata;
-use Goug\Framework\Core\Runtime;
 
 /**
- * Defines the behavior required of every GOUG Framework module.
+ * Defines the descriptive requirements of a framework module.
  */
 interface ModuleContract
 {
@@ -20,12 +19,9 @@ interface ModuleContract
     public function metadata(): ModuleMetadata;
 
     /**
-     * Register the module's definitions and infrastructure.
+     * Return the provider classes owned by this module.
+     *
+     * @return list<class-string<ProviderContract>>
      */
-    public function register(Runtime $runtime): void;
-
-    /**
-     * Activate the module's runtime behavior.
-     */
-    public function boot(Runtime $runtime): void;
+    public function providers(): array;
 }
