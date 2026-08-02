@@ -15,6 +15,10 @@ defined('ABSPATH') || exit;
  */
 final class Lifecycle
 {
+    public function __construct( private readonly Runtime $runtime ) {
+        
+    }
+
     /**
      * Run the complete framework lifecycle.
      */
