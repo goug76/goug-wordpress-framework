@@ -34,7 +34,7 @@ Every request follows the same high-level sequence.
 WordPress
     │
     ▼
-Framework Bootstrap
+Framework Prepare
     │
     ▼
 Core Initialization
