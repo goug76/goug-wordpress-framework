@@ -1,0 +1,9 @@
+{
+    "id": "example",
+    "name": "Example",
+    "description": "Provides an example GOUG Framework module.",
+    "version": "0.1.0",
+    "author": "Goug Labs",
+    "license": "GPL-2.0-or-later",
+    "requiresFramework": "^1.0"
+}

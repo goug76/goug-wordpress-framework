@@ -27,11 +27,6 @@ final class DashboardProvider extends AbstractProvider
      */
     public function boot(Runtime $runtime): void
     {
-        if (
-            defined('WP_DEBUG')
-            && WP_DEBUG
-        ) {
-            error_log('GOUG DashboardProvider booted.');
-        }
+        
     }
 }
