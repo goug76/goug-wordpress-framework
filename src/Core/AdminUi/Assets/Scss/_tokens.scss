@@ -1,0 +1,140 @@
+:root {
+    /*
+     * Brand colors
+     *
+     * Based on the official Goug Labs palette.
+     */
+    --goug-admin-color-navy: #011120;
+    --goug-admin-color-charcoal: #4d4d4d;
+    --goug-admin-color-cyan: #23dbe5;
+    --goug-admin-color-blue: #18bcd8;
+    --goug-admin-color-white: #ffffff;
+
+    /*
+     * Semantic brand roles
+     */
+    --goug-admin-color-primary: var(--goug-admin-color-navy);
+    --goug-admin-color-primary-hover: #08243a;
+    --goug-admin-color-accent: var(--goug-admin-color-cyan);
+    --goug-admin-color-accent-hover: var(--goug-admin-color-blue);
+    --goug-admin-color-accent-soft: #dffafd;
+
+    /*
+     * Page and surface colors
+     */
+    --goug-admin-color-background: #f3f7f9;
+    --goug-admin-color-surface: var(--goug-admin-color-white);
+    --goug-admin-color-surface-muted: #edf3f6;
+    --goug-admin-color-surface-strong: var(--goug-admin-color-navy);
+
+    /*
+     * Text colors
+     */
+    --goug-admin-color-text: #182733;
+    --goug-admin-color-text-muted: #63717c;
+    --goug-admin-color-text-subtle: #82909a;
+    --goug-admin-color-text-inverse: var(--goug-admin-color-white);
+    --goug-admin-color-heading: var(--goug-admin-color-navy);
+
+    /*
+     * Borders
+     */
+    --goug-admin-color-border: #d8e2e7;
+    --goug-admin-color-border-strong: #bccbd2;
+    --goug-admin-color-focus: var(--goug-admin-color-blue);
+
+    /*
+     * Status colors
+     */
+    --goug-admin-color-success: #238556;
+    --goug-admin-color-success-soft: #e7f7ef;
+
+    --goug-admin-color-warning: #b96b0c;
+    --goug-admin-color-warning-soft: #fff3df;
+
+    --goug-admin-color-danger: #b83d46;
+    --goug-admin-color-danger-soft: #fdebed;
+
+    --goug-admin-color-info: #2676a7;
+    --goug-admin-color-info-soft: #e6f4fb;
+
+    /*
+     * Typography
+     *
+     * This declares the preferred family but does not load Montserrat.
+     */
+    --goug-admin-font-family:
+        Montserrat,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    --goug-admin-font-family-mono:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+    --goug-admin-font-size-xs: 0.75rem;
+    --goug-admin-font-size-sm: 0.875rem;
+    --goug-admin-font-size-md: 1rem;
+    --goug-admin-font-size-lg: 1.125rem;
+    --goug-admin-font-size-xl: 1.5rem;
+    --goug-admin-font-size-2xl: 2rem;
+
+    --goug-admin-line-height-tight: 1.25;
+    --goug-admin-line-height-normal: 1.5;
+    --goug-admin-line-height-relaxed: 1.7;
+
+    --goug-admin-font-weight-normal: 400;
+    --goug-admin-font-weight-medium: 500;
+    --goug-admin-font-weight-semibold: 600;
+    --goug-admin-font-weight-bold: 700;
+
+    /*
+     * Spacing scale
+     */
+    --goug-admin-space-1: 0.25rem;
+    --goug-admin-space-2: 0.5rem;
+    --goug-admin-space-3: 0.75rem;
+    --goug-admin-space-4: 1rem;
+    --goug-admin-space-5: 1.25rem;
+    --goug-admin-space-6: 1.5rem;
+    --goug-admin-space-8: 2rem;
+    --goug-admin-space-10: 2.5rem;
+    --goug-admin-space-12: 3rem;
+
+    /*
+     * Shape
+     */
+    --goug-admin-radius-sm: 0.375rem;
+    --goug-admin-radius-md: 0.625rem;
+    --goug-admin-radius-lg: 0.875rem;
+    --goug-admin-radius-pill: 999px;
+
+    /*
+     * Depth
+     */
+    --goug-admin-shadow-sm:
+        0 1px 2px rgb(1 17 32 / 0.06),
+        0 1px 4px rgb(1 17 32 / 0.04);
+
+    --goug-admin-shadow-md:
+        0 8px 24px rgb(1 17 32 / 0.09);
+
+    --goug-admin-shadow-lg:
+        0 18px 48px rgb(1 17 32 / 0.14);
+
+    /*
+     * Motion
+     */
+    --goug-admin-transition-fast: 150ms ease;
+    --goug-admin-transition-normal: 250ms ease;
+
+    /*
+     * Layout
+     */
+    --goug-admin-content-width: 1600px;
+    --goug-admin-sidebar-width: 280px;
+}

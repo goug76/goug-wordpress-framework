@@ -31,7 +31,7 @@ final class ExampleProvider implements ProviderContract
         $viewPath = $runtime
             ->configuration()
             ->path(
-                'src/Modules/Example/Views/example-notice.php'
+                'src/Modules/Example/Views/admin-ui-showcase.php'
             );
 
         $this->controller = new ExampleController(

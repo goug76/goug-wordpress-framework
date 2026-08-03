@@ -24,6 +24,8 @@ final class ExampleController
      */
     private string $viewPath;
 
+    private string $pageHook = '';
+
     /**
      * Create the controller.
      */
@@ -41,15 +43,22 @@ final class ExampleController
     public function hooks(): void
     {
         add_action(
-            'admin_notices',
-            [$this, 'renderNotice']
+            'admin_menu',
+            [$this, 'registerPage']
+        );
+
+        add_filter(
+            'goug_framework_admin_ui_should_enqueue',
+            [$this, 'shouldLoadAdminUi'],
+            10,
+            2
         );
     }
 
     /**
-     * Render the example admin notice.
+     * Render the Admin UI showcase page.
      */
-    public function renderNotice(): void
+    public function renderPage(): void
     {
         if (! current_user_can('manage_options')) {
             return;
@@ -68,5 +77,38 @@ final class ExampleController
         $message = $this->service->message();
 
         require $this->viewPath;
+    }
+
+    /**
+     * Register the Example module administration page.
+     */
+    public function registerPage(): void
+    {
+        $this->pageHook = add_menu_page(
+            'GOUG Admin UI',
+            'GOUG UI Test',
+            'manage_options',
+            'goug-ui-test',
+            [$this, 'renderPage'],
+            'dashicons-admin-appearance',
+            80
+        );
+    }
+
+    /**
+     * Load the shared Admin UI on the Example module page.
+     */
+    public function shouldLoadAdminUi(
+        bool $shouldEnqueue,
+        string $hookSuffix
+    ): bool {
+        if (
+            $this->pageHook !== ''
+            && $hookSuffix === $this->pageHook
+        ) {
+            return true;
+        }
+
+        return $shouldEnqueue;
     }
 }

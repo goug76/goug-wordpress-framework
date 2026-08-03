@@ -7,6 +7,7 @@ namespace Goug\Framework\Core\Lifecycle;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Registries\ModuleRegistry;
+use Goug\Framework\Core\AdminUi\AdminUi;
 use Goug\Framework\Core\ModuleDiscovery;
 use Goug\Framework\Core\ModuleLoader;
 use Goug\Framework\Core\Runtime;
@@ -20,6 +21,8 @@ use Goug\Framework\Core\Runtime;
  */
 final class Lifecycle
 {
+    private ?AdminUi $adminUi = null;
+
     public function __construct( private readonly Runtime $runtime ) {
 
     }
@@ -31,6 +34,7 @@ final class Lifecycle
     {
         $this->prepare();
         $this->initialize();
+        $this->bootCore();
         $this->discoverModules();
         $this->registerModules();
         $this->bootModules();
@@ -61,6 +65,22 @@ final class Lifecycle
         $this->runtime->setModuleLoader(
             new ModuleLoader()
         );
+
+        $this->adminUi = new AdminUi();
+        $this->adminUi->register(
+            $this->runtime
+        );
+    }
+
+    private function bootCore(): void
+    {
+        if ($this->adminUi === null) {
+            throw new \LogicException(
+                'The shared Admin UI has not been initialized.'
+            );
+        }
+
+        $this->adminUi->boot();
     }
 
     /**

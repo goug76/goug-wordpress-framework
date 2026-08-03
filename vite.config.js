@@ -43,21 +43,29 @@ export default defineConfig({
 
     rollupOptions: {
       input: {
-        theme_js: path.resolve(
+        "frontend-js": path.resolve(
           themePath,
-          "src/js/script.js"
+          "resources/js/frontend.js"
         ),
-        theme_css: path.resolve(
+
+        "frontend-css": path.resolve(
           themePath,
-          "src/scss/style.scss"
+          "resources/scss/frontend.scss"
         ),
-        admin_css: path.resolve(
+
+        "admin-js": path.resolve(
           themePath,
-          "src/scss/admin_style.scss"
+          "resources/js/admin.js"
         ),
-        admin_js: path.resolve(
+
+        "admin-css": path.resolve(
           themePath,
-          "src/js/admin_script.js"
+          "resources/scss/admin.scss"
+        ),
+
+        "admin-ui": path.resolve(
+          themePath,
+          "src/Core/AdminUi/Assets/Scss/admin-ui.scss"
         ),
       },
 

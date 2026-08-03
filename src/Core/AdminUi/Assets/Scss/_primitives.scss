@@ -1,0 +1,226 @@
+/*
+ * Shared GOUG admin interface primitives.
+ *
+ * Everything is scoped to .goug-admin so these styles do not alter
+ * unrelated WordPress or third-party administration screens.
+ */
+
+.goug-admin {
+    box-sizing: border-box;
+    color: var(--goug-admin-color-text);
+    font-family: var(--goug-admin-font-family);
+    font-size: var(--goug-admin-font-size-md);
+    line-height: var(--goug-admin-line-height-normal);
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: inherit;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: var(--goug-admin-color-heading);
+        font-family: inherit;
+        line-height: var(--goug-admin-line-height-tight);
+        margin-block-start: 0;
+    }
+
+    p {
+        margin-block-start: 0;
+    }
+
+    a {
+        color: var(--goug-admin-color-info);
+        transition: color var(--goug-admin-transition-fast);
+
+        &:hover,
+        &:focus {
+            color: var(--goug-admin-color-primary);
+        }
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--goug-admin-color-focus);
+        outline-offset: 2px;
+    }
+}
+
+/*
+ * Page shell
+ */
+
+.goug-admin__page {
+    background: var(--goug-admin-color-background);
+    min-height: 100%;
+    padding: var(--goug-admin-space-8);
+}
+
+.goug-admin__content {
+    margin-inline: auto;
+    max-width: var(--goug-admin-content-width);
+    width: 100%;
+}
+
+/*
+ * Surfaces
+ */
+
+.goug-admin__surface {
+    background: var(--goug-admin-color-surface);
+    border: 1px solid var(--goug-admin-color-border);
+    border-radius: var(--goug-admin-radius-lg);
+    box-shadow: var(--goug-admin-shadow-sm);
+}
+
+.goug-admin__surface--muted {
+    background: var(--goug-admin-color-surface-muted);
+}
+
+.goug-admin__surface--strong {
+    background: var(--goug-admin-color-surface-strong);
+    color: var(--goug-admin-color-text-inverse);
+}
+
+/*
+ * Typography helpers
+ */
+
+.goug-admin__heading {
+    color: var(--goug-admin-color-heading);
+    font-weight: var(--goug-admin-font-weight-bold);
+}
+
+.goug-admin__muted {
+    color: var(--goug-admin-color-text-muted);
+}
+
+.goug-admin__eyebrow {
+    color: var(--goug-admin-color-blue);
+    font-size: var(--goug-admin-font-size-xs);
+    font-weight: var(--goug-admin-font-weight-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/*
+ * Buttons
+ */
+
+.goug-admin__button {
+    align-items: center;
+    appearance: none;
+    background: var(--goug-admin-color-primary);
+    border: 1px solid var(--goug-admin-color-primary);
+    border-radius: var(--goug-admin-radius-md);
+    color: var(--goug-admin-color-text-inverse);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-weight: var(--goug-admin-font-weight-semibold);
+    gap: var(--goug-admin-space-2);
+    justify-content: center;
+    min-height: 2.5rem;
+    padding: var(--goug-admin-space-2) var(--goug-admin-space-4);
+    text-decoration: none;
+    transition:
+        background-color var(--goug-admin-transition-fast),
+        border-color var(--goug-admin-transition-fast),
+        box-shadow var(--goug-admin-transition-fast),
+        transform var(--goug-admin-transition-fast);
+
+    &:hover,
+    &:focus {
+        background: var(--goug-admin-color-primary-hover);
+        border-color: var(--goug-admin-color-primary-hover);
+        color: var(--goug-admin-color-text-inverse);
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: not-allowed;
+        opacity: 0.55;
+        pointer-events: none;
+    }
+}
+
+.goug-admin__button--accent {
+    background: var(--goug-admin-color-accent);
+    border-color: var(--goug-admin-color-accent);
+    color: var(--goug-admin-color-primary);
+
+    &:hover,
+    &:focus {
+        background: var(--goug-admin-color-accent-hover);
+        border-color: var(--goug-admin-color-accent-hover);
+        color: var(--goug-admin-color-primary);
+    }
+}
+
+.goug-admin__button--secondary {
+    background: var(--goug-admin-color-surface);
+    border-color: var(--goug-admin-color-border-strong);
+    color: var(--goug-admin-color-primary);
+
+    &:hover,
+    &:focus {
+        background: var(--goug-admin-color-surface-muted);
+        border-color: var(--goug-admin-color-primary);
+        color: var(--goug-admin-color-primary);
+    }
+}
+
+/*
+ * Status indicators
+ */
+
+.goug-admin__status {
+    align-items: center;
+    border-radius: var(--goug-admin-radius-pill);
+    display: inline-flex;
+    font-size: var(--goug-admin-font-size-sm);
+    font-weight: var(--goug-admin-font-weight-semibold);
+    gap: var(--goug-admin-space-2);
+    padding: var(--goug-admin-space-1) var(--goug-admin-space-3);
+}
+
+.goug-admin__status--success {
+    background: var(--goug-admin-color-success-soft);
+    color: var(--goug-admin-color-success);
+}
+
+.goug-admin__status--warning {
+    background: var(--goug-admin-color-warning-soft);
+    color: var(--goug-admin-color-warning);
+}
+
+.goug-admin__status--danger {
+    background: var(--goug-admin-color-danger-soft);
+    color: var(--goug-admin-color-danger);
+}
+
+.goug-admin__status--info {
+    background: var(--goug-admin-color-info-soft);
+    color: var(--goug-admin-color-info);
+}
+
+/*
+ * Respect reduced-motion preferences.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+    .goug-admin *,
+    .goug-admin *::before,
+    .goug-admin *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
