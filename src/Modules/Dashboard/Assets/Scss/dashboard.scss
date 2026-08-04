@@ -30,14 +30,43 @@
         gap: var(--goug-admin-space-3);
     }
 
-    &__main {
+    &__grid {
         display: grid;
         gap: var(--goug-admin-space-6);
+        grid-template-columns:
+            repeat(12, minmax(0, 1fr));
     }
 
-    &__workspace {
-        min-height: 16rem;
-        padding: var(--goug-admin-space-8);
+    &__panel {
+        grid-column: span 12;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    &__panel-header {
+        border-bottom:
+            1px solid
+            var(--goug-admin-color-border);
+        padding:
+            var(--goug-admin-space-5)
+            var(--goug-admin-space-6);
+    }
+
+    &__panel-title {
+        font-size: var(--goug-admin-font-size-lg);
+        margin-bottom: var(--goug-admin-space-1);
+    }
+
+    &__panel-description {
+        margin-bottom: 0;
+    }
+
+    &__panel-body {
+        padding: var(--goug-admin-space-6);
+
+        > :last-child {
+            margin-bottom: 0;
+        }
     }
 }
 
@@ -56,8 +85,11 @@
             }
         }
 
-        &__workspace {
-            padding: var(--goug-admin-space-6);
+        &__panel-header,
+        &__panel-body {
+            padding:
+                var(--goug-admin-space-5)
+                var(--goug-admin-space-4);
         }
     }
 }

@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 defined('ABSPATH') || exit;
+
+/**
+ * Dashboard page.
+ *
+ * @var list<\Goug\Framework\Modules\Dashboard\Models\Panel> $panels
+ */
 ?>
 
 <div class="wrap goug-admin goug-dashboard">
@@ -38,20 +44,52 @@ defined('ABSPATH') || exit;
             </header>
 
             <main class="goug-dashboard__main">
-                <section class="goug-admin__surface goug-dashboard__workspace">
-                    <p class="goug-admin__eyebrow">
-                        Dashboard Workspace
-                    </p>
+                <div class="goug-dashboard__grid">
 
-                    <h2 class="goug-admin__heading">
-                        Your dashboard is ready for panels
-                    </h2>
+                    <?php foreach ($panels as $panel) : ?>
+                        <section
+                            class="goug-admin__surface goug-dashboard__panel"
+                            data-panel-id="<?php echo esc_attr($panel->id()); ?>"
+                        >
+                            <header class="goug-dashboard__panel-header">
+                                <div>
+                                    <h2 class="goug-admin__heading goug-dashboard__panel-title">
+                                        <?php echo esc_html($panel->title()); ?>
+                                    </h2>
 
-                    <p class="goug-admin__muted">
-                        The page shell, shared design system, and
-                        Dashboard-owned assets are now connected.
-                    </p>
-                </section>
+                                    <?php if ($panel->description() !== '') : ?>
+                                        <p class="goug-admin__muted goug-dashboard__panel-description">
+                                            <?php echo esc_html($panel->description()); ?>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            </header>
+
+                            <div class="goug-dashboard__panel-body">
+                                <?php
+                                $panelViewPath = $panel->viewPath();
+
+                                if (! is_file($panelViewPath)) {
+                                    throw new RuntimeException(
+                                        sprintf(
+                                            'The Dashboard panel view could not be found at "%s".',
+                                            $panelViewPath
+                                        )
+                                    );
+                                }
+
+                                extract(
+                                    $panel->viewData(),
+                                    EXTR_SKIP
+                                );
+
+                                require $panelViewPath;
+                                ?>
+                            </div>
+                        </section>
+                    <?php endforeach; ?>
+
+                </div>
             </main>
 
         </div>

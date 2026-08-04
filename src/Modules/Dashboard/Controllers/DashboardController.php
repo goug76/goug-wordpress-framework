@@ -6,6 +6,7 @@ namespace Goug\Framework\Modules\Dashboard\Controllers;
 
 defined('ABSPATH') || exit;
 
+use Goug\Framework\Modules\Dashboard\Services\DashboardService;
 use RuntimeException;
 
 /**
@@ -17,9 +18,12 @@ final class DashboardController
 
     private string $pageHook = '';
 
+    private DashboardService $dashboardService;
+
     public function __construct(
-        string $viewPath
-    ) {
+        DashboardService $dashboardService,
+        string $viewPath ) {
+        $this->dashboardService = $dashboardService;
         $this->viewPath = $viewPath;
     }
 
@@ -89,6 +93,8 @@ final class DashboardController
                 )
             );
         }
+
+        $panels = $this->dashboardService->panels();
 
         require $this->viewPath;
     }
