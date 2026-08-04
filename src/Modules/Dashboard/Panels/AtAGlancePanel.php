@@ -7,7 +7,7 @@ namespace Goug\Framework\Modules\Dashboard\Panels;
 defined('ABSPATH') || exit;
 
 use Goug\Framework\Modules\Dashboard\Contracts\PanelContract;
-use Goug\Framework\Modules\Dashboard\Services\AtAGlanceService;
+use Goug\Framework\Modules\Dashboard\Services\ContentStatisticsService;
 
 /**
  * Provides the Dashboard At a Glance panel.
@@ -15,7 +15,7 @@ use Goug\Framework\Modules\Dashboard\Services\AtAGlanceService;
 final class AtAGlancePanel implements PanelContract
 {
     public function __construct(
-        private AtAGlanceService $service,
+        private ContentStatisticsService $service,
         private string $viewPath
     ) {
     }
@@ -51,8 +51,7 @@ final class AtAGlancePanel implements PanelContract
     public function viewData(): array
     {
         return [
-            'contentCounts' => $this->service
-                ->contentCounts(),
+            'statistics' => $this->service->statistics(),
         ];
     }
 }

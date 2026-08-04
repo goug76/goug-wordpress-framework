@@ -13,7 +13,7 @@ use Goug\Framework\Modules\Dashboard\Controllers\DashboardController;
 use Goug\Framework\Modules\Dashboard\Registries\PanelRegistry;
 use Goug\Framework\Modules\Dashboard\Services\DashboardService;
 use Goug\Framework\Modules\Dashboard\Panels\AtAGlancePanel;
-use Goug\Framework\Modules\Dashboard\Services\AtAGlanceService;
+use Goug\Framework\Modules\Dashboard\Services\ContentStatisticsService;
 use LogicException;
 
 /**
@@ -33,7 +33,7 @@ final class DashboardProvider implements ProviderContract
 
         $panelRegistry->register(
             new AtAGlancePanel(
-                new AtAGlanceService(),
+                new ContentStatisticsService(),
                 $configuration->path(
                     'src/Modules/Dashboard/Views/Panels/at-a-glance.php'
                 )
