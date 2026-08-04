@@ -10,9 +10,10 @@ use Goug\Framework\Core\Contracts\ProviderContract;
 use Goug\Framework\Core\Runtime;
 use Goug\Framework\Modules\Dashboard\Assets\DashboardAssetLoader;
 use Goug\Framework\Modules\Dashboard\Controllers\DashboardController;
-use Goug\Framework\Modules\Dashboard\Models\Panel;
 use Goug\Framework\Modules\Dashboard\Registries\PanelRegistry;
 use Goug\Framework\Modules\Dashboard\Services\DashboardService;
+use Goug\Framework\Modules\Dashboard\Panels\AtAGlancePanel;
+use Goug\Framework\Modules\Dashboard\Services\AtAGlanceService;
 use LogicException;
 
 /**
@@ -31,17 +32,11 @@ final class DashboardProvider implements ProviderContract
         $panelRegistry = new PanelRegistry();
 
         $panelRegistry->register(
-            new Panel(
-                'getting-started',
-                'Dashboard foundation ready',
-                'The Dashboard panel system is connected.',
+            new AtAGlancePanel(
+                new AtAGlanceService(),
                 $configuration->path(
-                    'src/Modules/Dashboard/Views/Panels/getting-started.php'
-                ),
-                10,
-                [
-                    'message' => 'Panels are now registered, ordered, and rendered through the Dashboard architecture.',
-                ]
+                    'src/Modules/Dashboard/Views/Panels/at-a-glance.php'
+                )
             )
         );
 

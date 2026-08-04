@@ -68,6 +68,49 @@
             margin-bottom: 0;
         }
     }
+
+     &__stat-list {
+        display: grid;
+        gap: var(--goug-admin-space-3);
+        grid-template-columns:
+            repeat(auto-fit, minmax(10rem, 1fr));
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__stat {
+        align-items: center;
+        background:
+            var(--goug-admin-color-surface-muted);
+        border-radius:
+            var(--goug-admin-radius-md);
+        display: grid;
+        gap:
+            var(--goug-admin-space-1)
+            var(--goug-admin-space-3);
+        grid-template-columns: auto 1fr;
+        padding: var(--goug-admin-space-4);
+
+        .dashicons {
+            color: var(--goug-admin-color-blue);
+            grid-row: span 2;
+        }
+    }
+
+    &__stat-value {
+        color: var(--goug-admin-color-heading);
+        font-size: var(--goug-admin-font-size-xl);
+        font-weight:
+            var(--goug-admin-font-weight-bold);
+        line-height:
+            var(--goug-admin-line-height-tight);
+    }
+
+    &__stat-label {
+        color: var(--goug-admin-color-text-muted);
+        font-size: var(--goug-admin-font-size-sm);
+    }
 }
 
 @media (max-width: 782px) {

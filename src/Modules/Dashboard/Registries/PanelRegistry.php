@@ -6,7 +6,7 @@ namespace Goug\Framework\Modules\Dashboard\Registries;
 
 defined('ABSPATH') || exit;
 
-use Goug\Framework\Modules\Dashboard\Models\Panel;
+use Goug\Framework\Modules\Dashboard\Contracts\PanelContract;
 use LogicException;
 
 /**
@@ -15,17 +15,13 @@ use LogicException;
 final class PanelRegistry
 {
     /**
-     * Registered panels indexed by identifier.
-     *
-     * @var array<string, Panel>
+     * @var array<string, PanelContract>
      */
     private array $panels = [];
 
-    /**
-     * Register one Dashboard panel.
-     */
-    public function register(Panel $panel): void
-    {
+    public function register(
+        PanelContract $panel
+    ): void {
         $panelId = $panel->id();
 
         if ($this->has($panelId)) {
@@ -40,28 +36,19 @@ final class PanelRegistry
         $this->panels[$panelId] = $panel;
     }
 
-    /**
-     * Determine whether a panel is registered.
-     */
     public function has(string $panelId): bool
     {
-        return isset(
-            $this->panels[$panelId]
-        );
+        return isset($this->panels[$panelId]);
     }
 
-    /**
-     * Return one registered panel.
-     */
-    public function get(string $panelId): ?Panel
-    {
+    public function get(
+        string $panelId
+    ): ?PanelContract {
         return $this->panels[$panelId] ?? null;
     }
 
     /**
-     * Return all panels ordered by priority.
-     *
-     * @return list<Panel>
+     * @return list<PanelContract>
      */
     public function all(): array
     {
@@ -71,13 +58,11 @@ final class PanelRegistry
 
         usort(
             $panels,
-            static function (
-                Panel $first,
-                Panel $second
-            ): int {
-                return $first->priority()
-                    <=> $second->priority();
-            }
+            static fn (
+                PanelContract $first,
+                PanelContract $second
+            ): int => $first->priority()
+                <=> $second->priority()
         );
 
         return $panels;
