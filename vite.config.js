@@ -67,6 +67,10 @@ export default defineConfig({
           themePath,
           "src/Core/AdminUi/Assets/Scss/admin-ui.scss"
         ),
+        "dashboard-css": path.resolve(
+          themePath,
+          "src/Modules/Dashboard/Assets/Scss/dashboard.scss"
+        ),
       },
 
       output: {

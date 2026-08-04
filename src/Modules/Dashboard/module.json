@@ -1,0 +1,9 @@
+{
+    "id": "dashboard",
+    "name": "GOUG Dashboard",
+    "description": "Provides a modern administration dashboard.",
+    "version": "0.1.0",
+    "author": "Goug Labs",
+    "license": "GPL-2.0-or-later",
+    "requiresFramework": "^1.0"
+}

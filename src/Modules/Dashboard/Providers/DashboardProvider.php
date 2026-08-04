@@ -6,27 +6,39 @@ namespace Goug\Framework\Modules\Dashboard\Providers;
 
 defined('ABSPATH') || exit;
 
-use Goug\Framework\Core\Provider\AbstractProvider;
+use Goug\Framework\Core\Contracts\ProviderContract;
 use Goug\Framework\Core\Runtime;
+use Goug\Framework\Modules\Dashboard\Controllers\DashboardController;
+use LogicException;
 
 /**
- * Coordinates the primary Dashboard module infrastructure.
+ * Wires the Dashboard module.
  */
-final class DashboardProvider extends AbstractProvider
+final class DashboardProvider implements ProviderContract
 {
-    /**
-     * Register Dashboard infrastructure.
-     */
+    private ?DashboardController $controller = null;
+
     public function register(Runtime $runtime): void
     {
-        // Dashboard infrastructure will be registered when required.
+        $viewPath = $runtime
+            ->configuration()
+            ->path(
+                'src/Modules/Dashboard/Views/dashboard.php'
+            );
+
+        $this->controller = new DashboardController(
+            $viewPath
+        );
     }
 
-    /**
-     * Activate Dashboard runtime behavior.
-     */
     public function boot(Runtime $runtime): void
     {
-        
+        if ($this->controller === null) {
+            throw new LogicException(
+                'The Dashboard module must be registered before it is booted.'
+            );
+        }
+
+        $this->controller->hooks();
     }
 }
