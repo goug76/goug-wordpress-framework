@@ -49,6 +49,16 @@ final class DashboardController
             'dashicons-dashboard',
             2
         );
+
+        /**
+         * Fires after the Dashboard administration page is registered.
+         *
+         * @param string $pageHook WordPress administration page hook.
+         */
+        do_action(
+            'goug_dashboard_page_registered',
+            $this->pageHook
+        );
     }
 
     public function shouldLoadAdminUi(

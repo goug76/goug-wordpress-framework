@@ -8,6 +8,7 @@ defined('ABSPATH') || exit;
 
 use Goug\Framework\Core\Contracts\ProviderContract;
 use Goug\Framework\Core\Runtime;
+use Goug\Framework\Modules\Dashboard\Assets\DashboardAssetLoader;
 use Goug\Framework\Modules\Dashboard\Controllers\DashboardController;
 use LogicException;
 
@@ -17,6 +18,8 @@ use LogicException;
 final class DashboardProvider implements ProviderContract
 {
     private ?DashboardController $controller = null;
+
+    private ?DashboardAssetLoader $assetLoader = null;
 
     public function register(Runtime $runtime): void
     {
@@ -29,16 +32,29 @@ final class DashboardProvider implements ProviderContract
         $this->controller = new DashboardController(
             $viewPath
         );
+
+        $this->assetLoader = new DashboardAssetLoader(
+            $runtime->configuration()
+        );
     }
 
     public function boot(Runtime $runtime): void
     {
-        if ($this->controller === null) {
+        if (
+            $this->controller === null
+            || $this->assetLoader === null
+        ) {
             throw new LogicException(
                 'The Dashboard module must be registered before it is booted.'
             );
         }
 
         $this->controller->hooks();
+        $this->assetLoader->hooks();
+
+        add_action(
+            'goug_dashboard_page_registered',
+            [$this->assetLoader, 'setPageHook']
+        );
     }
 }

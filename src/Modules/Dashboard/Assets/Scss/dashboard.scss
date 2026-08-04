@@ -1,6 +1,63 @@
 .goug-dashboard {
-    &__empty {
-        margin-top: var(--goug-admin-space-6);
-        padding: var(--goug-admin-space-6);
+    margin: 0;
+
+    &__header {
+        align-items: flex-start;
+        display: flex;
+        gap: var(--goug-admin-space-6);
+        justify-content: space-between;
+        margin-bottom: var(--goug-admin-space-8);
+    }
+
+    &__intro {
+        max-width: 48rem;
+    }
+
+    &__title {
+        font-size: var(--goug-admin-font-size-2xl);
+        margin-bottom: var(--goug-admin-space-2);
+    }
+
+    &__description {
+        font-size: var(--goug-admin-font-size-md);
+        margin-bottom: 0;
+    }
+
+    &__actions {
+        align-items: center;
+        display: flex;
+        flex-shrink: 0;
+        gap: var(--goug-admin-space-3);
+    }
+
+    &__main {
+        display: grid;
+        gap: var(--goug-admin-space-6);
+    }
+
+    &__workspace {
+        min-height: 16rem;
+        padding: var(--goug-admin-space-8);
+    }
+}
+
+@media (max-width: 782px) {
+    .goug-dashboard {
+        &__header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        &__actions {
+            width: 100%;
+
+            .goug-admin__button {
+                width: 100%;
+            }
+        }
+
+        &__workspace {
+            padding: var(--goug-admin-space-6);
+        }
     }
 }
